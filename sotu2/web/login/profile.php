@@ -1,65 +1,63 @@
 <?php
 session_start();
-// DB接続設定（適宜変更してください）
-$host = 'localhost';
-$dbname = 'sotu2';
-$user = 'root';
-$pass = '';
+require_once('config.php'); // DB接続
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die('DB接続エラー: ' . $e->getMessage());
+// ログインしていない場合はログイン画面にリダイレクト
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login_form.php');
+    exit();
 }
 
-// ログイン済みかチェック
-if (!isset($_SESSION['id'])) {
-    die('ログインしてください');
+$user_id = $_SESSION['user_id'];
+
+// DBからユーザー情報を取得
+$stmt = $pdo->prepare("SELECT * FROM User WHERE user_id = :user_id");
+$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+$stmt->execute();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    echo "ユーザー情報が見つかりません。";
+    exit();
 }
 
-$userId = $_SESSION['id'];
-
-// フォーム送信時に名前を更新
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['new_name'])) {
-    $newName = $_POST['new_name'];
-
-    // バリデーション（例: 空文字や長さチェックなどは必要に応じて）
-    $newName = trim($newName);
-    if ($newName === '') {
-        echo "名前は空にできません。";
-    } else {
-        // DBを更新
-        $stmt = $pdo->prepare("UPDATE users SET name = :name WHERE id = :id");
-        $stmt->execute([':name' => $newName, ':id' => $userId]);
-
-        // セッションの名前も更新
-        $_SESSION['name'] = $newName;
-
-        // リダイレクトしてフォーム再送信防止
-        header('Location: ' . $_SERVER['PHP_SELF']);
-        exit;
-    }
-}
-
-// セッションから現在の名前を取得
-$username = isset($_SESSION['name']) ? $_SESSION['name'] : '';
-
+// 表示用変数
+$img_icon = $user['pro_img'] ?? 'default_icon.png'; // デフォルトアイコン
+$u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
+$u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
+$introduction = htmlspecialchars($user['introduction'] ?? '', ENT_QUOTES, 'UTF-8'); // 自己紹介
 ?>
 
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>プロフィール</title>
+<meta charset="UTF-8">
+<title>プロフィール</title>
+<style>
+    body { font-family: sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
+    .profile-container { max-width: 500px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .profile-icon { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; }
+    h1 { margin: 0; font-size: 24px; }
+    h2 { margin: 5px 0 20px 0; font-size: 18px; color: #555; }
+    p { margin-bottom: 20px; line-height: 1.5; }
+    .btn { display: inline-block; padding: 10px 20px; margin-right: 10px; background: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
+    .btn:hover { background: #0056b3; }
+</style>
 </head>
 <body>
-    <h1>プロフィール画面</h1>
-    <h1><?= htmlspecialchars($username, ENT_QUOTES, 'UTF-8') ?></h1>
-    <a href="profile_setting.php">プロフィールを編集</a>
-
-<!--削除予定-->
-    <a href="logout.php">ログアウト</a>
+<div class="profile-container">
+    <!-- アイコン -->
+    <img src="<?= htmlspecialchars($img_icon, ENT_QUOTES) ?>" alt="プロフィール画像" class="profile-icon">
+    
+    <!-- ユーザー名 -->
+    <h1><?= $u_name ?></h1>
+    
+    <!-- ユーザーID -->
+    <h2>@<?= $u_name_id ?></h2>
+    
+    <!-- ボタン -->
+    <a href="profile_setting.php" class="btn">プロフィール編集</a>
+    <a href="diagnosis.php" class="btn">診断画面へ</a>
+</div>
 </body>
 </html>
-

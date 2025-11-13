@@ -1,103 +1,145 @@
 <?php
-//sscoachaidhaudh
 session_start();
+require_once('config.php'); // DB接続
 
-// DB接続設定
-require_once('config.php');
-
-// ログイン済みかチェック
+// ログインチェック
 if (!isset($_SESSION['user_id'])) {
-    die('ログインしてください');
+    header('Location: login_form.php');
+    exit();
 }
 
-$userId = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
 
-// 現在のユーザー情報を取得
-$stmt = $pdo->prepare("SELECT name, image FROM users WHERE id = :id");
-$stmt->execute([':id' => $userId]);
+// DBからユーザー情報取得
+$stmt = $pdo->prepare("SELECT * FROM User WHERE user_id = :user_id");
+$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+$stmt->execute();
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$username = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-$currentImage = !empty($user['image']) ? 'uploads/' . htmlspecialchars($user['image'], ENT_QUOTES, 'UTF-8') : 'uploads/default.png';
+if (!$user) {
+    echo "ユーザー情報が見つかりません。";
+    exit();
+}
+
+// 画像リサイズ関数（GDライブラリ）
+function resizeImage($file_tmp, $save_path, $max_width = 300, $max_height = 300) {
+    list($orig_width, $orig_height) = getimagesize($file_tmp);
+    $ratio = min($max_width / $orig_width, $max_height / $orig_height, 1); // 小さい画像はそのまま
+    $new_width = (int)($orig_width * $ratio);
+    $new_height = (int)($orig_height * $ratio);
+
+    $src = imagecreatefromstring(file_get_contents($file_tmp));
+    $dst = imagecreatetruecolor($new_width, $new_height);
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $new_width, $new_height, $orig_width, $orig_height);
+
+    $result = imagejpeg($dst, $save_path, 80); // 画質80%
+    imagedestroy($src);
+    imagedestroy($dst);
+    return $result;
+}
 
 // フォーム送信処理
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $newName = trim($_POST['new_name']);
-    $imageFileName = null;
 
-    // 🔹 名前バリデーション
-    if ($newName === '') {
-        echo "名前は空にできません。";
-    } elseif (!preg_match('/^[a-zA-Z]{1,30}$/', $newName)) {
-        echo "ユーザー名は英字のみ30文字以内で入力してください。";
-    } else {
-        // 🔹 画像がアップロードされた場合
-        if (!empty($_FILES['image']['name'])) {
-            $uploadDir = 'uploads/';
-            $imageFileName = uniqid() . '_' . basename($_FILES['image']['name']);
-            $uploadFile = $uploadDir . $imageFileName;
+    $u_name = $_POST['u_name'] ?? '';
+    $u_name_id = $_POST['u_name_id'] ?? '';
 
-            // 許可するファイル形式
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-            if (in_array($_FILES['image']['type'], $allowedTypes)) {
-                // ファイルを保存
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-                    // 古い画像が存在すれば削除（default.pngは削除しない）
-                    if (!empty($user['image']) && file_exists('uploads/' . $user['image']) && $user['image'] !== 'default.png') {
-                        unlink('uploads/' . $user['image']);
-                    }
-                } else {
-                    die('画像のアップロードに失敗しました。');
-                }
+    $pro_img = $user['pro_img'];
+
+    // 画像アップロード
+    if (!empty($_FILES['pro_img']['name'])) {
+
+        if ($_FILES['pro_img']['size'] > 2*1024*1024) {
+            $error = "画像は2MB以下にしてください。";
+        } else {
+            $upload_dir = 'u_icon/';
+            if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+
+            $file_tmp = $_FILES['pro_img']['tmp_name'];
+            $file_name = uniqid() . '_' . basename($_FILES['pro_img']['name']);
+            $file_path = $upload_dir . $file_name;
+
+            if (resizeImage($file_tmp, $file_path)) {
+                $pro_img = $file_path;
             } else {
-                die('画像形式は JPG / PNG / GIF のみ対応しています。');
+                $error = "画像のアップロードに失敗しました。";
             }
         }
+    }
 
-        // 🔹 DB更新
-        if ($imageFileName) {
-            $stmt = $pdo->prepare("UPDATE users SET name = :name, image = :image WHERE id = :id");
-            $stmt->execute([':name' => $newName, ':image' => $imageFileName, ':id' => $userId]);
+    // DB更新
+    if (!isset($error)) {
+        $update = $pdo->prepare("UPDATE User SET u_name = :u_name, u_name_id = :u_name_id, pro_img = :pro_img WHERE user_id = :user_id");
+        $update->bindValue(':u_name', $u_name, PDO::PARAM_STR);
+        $update->bindValue(':u_name_id', $u_name_id, PDO::PARAM_STR);
+        $update->bindValue(':pro_img', $pro_img, PDO::PARAM_STR);
+        $update->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+
+        if ($update->execute()) {
+            // セッション更新
+            $_SESSION['u_name'] = $u_name;
+            $_SESSION['u_name_id'] = $u_name_id;
+            $_SESSION['pro_img'] = $pro_img;
+
+            header('Location: profile.php');
+            exit();
         } else {
-            $stmt = $pdo->prepare("UPDATE users SET name = :name WHERE id = :id");
-            $stmt->execute([':name' => $newName, ':id' => $userId]);
+            $error = "更新に失敗しました。";
         }
-
-        // セッション更新
-        $_SESSION['name'] = $newName;
-
-        // リダイレクトしてフォーム再送信防止
-        header('Location: ' . $_SERVER['PHP_SELF']);
-        exit;
     }
 }
+
+// 表示用
+$img_icon = $user['pro_img'] ?? 'dflt_icon.jpg';
+$u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
+$u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
 ?>
 
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>プロフィール設定</title>
+<meta charset="UTF-8">
+<title>プロフィール編集</title>
+<style>
+body { font-family: sans-serif; background: #f9f9f9; margin:0; padding:0;}
+.container { max-width:500px; margin:50px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+h1 { text-align:center; margin-bottom:20px; }
+.form-group { margin-bottom:15px; }
+label { display:block; margin-bottom:5px; font-weight:bold; }
+input[type="text"], textarea { width:100%; padding:8px; box-sizing:border-box; }
+input[type="file"] { padding:5px; }
+.profile-icon { width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:15px; display:block;}
+.btn { display:inline-block; padding:10px 20px; background:#007bff; color:#fff; text-decoration:none; border-radius:5px; border:none; cursor:pointer; }
+.btn:hover { background:#0056b3; }
+.error { color:red; margin-bottom:15px; }
+</style>
 </head>
 <body>
-    <h1>プロフィールを編集</h1>
+<div class="container">
+<h1>プロフィール編集</h1>
 
-    <!-- 現在のプロフィール画像 -->
-    <img src="<?= $currentImage ?>" alt="プロフィール画像" class="profile-icon"><br><br>
+<?php if(isset($error)) echo "<p class='error'>{$error}</p>"; ?>
 
-    <form method="POST" enctype="multipart/form-data">
-        <label for="new_name">ユーザー名を変更:</label><br>
-        <input type="text" name="new_name" id="new_name" value="<?= $username ?>" required
-               maxlength="30" pattern="[A-Za-z]{1,30}" title="英字のみ30文字以内"><br><br>
+<form action="" method="post" enctype="multipart/form-data">
+    <img src="<?= htmlspecialchars($img_icon, ENT_QUOTES) ?>" alt="プロフィール画像" class="profile-icon">
+    <div class="form-group">
+        <label for="pro_img">プロフィール画像</label>
+        <input type="file" name="pro_img" id="pro_img" accept="image/*">
+    </div>
 
-        <label for="image">プロフィール画像を変更:</label><br>
-        <input type="file" name="image" id="image" accept="image/*"><br><br>
+    <div class="form-group">
+        <label for="u_name">ユーザー名</label>
+        <input type="text" name="u_name" id="u_name" value="<?= $u_name ?>" required>
+    </div>
 
-        <button type="submit">変更</button>
-    </form>
+    <div class="form-group">
+        <label for="u_name_id">ユーザーID</label>
+        <input type="text" name="u_name_id" id="u_name_id" value="<?= $u_name_id ?>" required>
+    </div>
 
-    <br>
-    <a href="profile.php">プロフィールへ戻る</a><br>
-    <a href="logout.php">ログアウト</a>
+    <button type="submit" class="btn">更新する</button>
+    <a href="profile.php" class="btn" style="background:#6c757d;">キャンセル</a>
+</form>
+</div>
 </body>
 </html>

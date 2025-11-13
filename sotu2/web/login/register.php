@@ -33,7 +33,7 @@ $style = '
 ';
 
 $sql = "SELECT * FROM User WHERE email = :email";
-$stmt = $dbh->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindValue(':email', $email);
 $stmt->execute();
 $member = $stmt->fetch();
@@ -46,7 +46,7 @@ if ($member && $member['email'] === $email) {
     $link = '<a href="signup.php">戻る</a>';
 } else {
     $sql = "INSERT INTO User(email, pwd, u_name, u_name_id) VALUES (:email, :pwd, :u_name, :u_name_id)";
-    $stmt = $dbh->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':u_name', $u_name);
     $stmt->bindValue(':u_name_id', $u_name_id);
     $stmt->bindValue(':email', $email);
