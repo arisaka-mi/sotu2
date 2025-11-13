@@ -1,4 +1,5 @@
 <?php
+//sscoachaidhaudh
 session_start();
 
 // DB接続設定
