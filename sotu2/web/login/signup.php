@@ -85,27 +85,27 @@
             <h1>新規会員登録</h1>
             <form action="register.php" method="post">
                 <!--名前-->
-                <div class="name">
+                <div class="u_name">
                 <label>
-                    <input type="text" name="name" required placeholder="Name">
+                    <input type="text" name="u_name" required placeholder="Name">
                 </label>
                 </div>
                 <!--ユーザーネーム-->
-                <div class="username">
+                <div class="u_name_id">
                 <label>
-                    <input type="text" name="username" required placeholder="User-Name">
+                    <input type="text" name="u_name_id" required placeholder="User-Name">
                 </label>
                 </div>
                 <!--Eメール-->
                 <div class="email">
                 <label>
-                    <input type="text" name="mail" required placeholder="Email Address">
+                    <input type="text" name="email" required placeholder="Email Address">
                 </label>
                 </div>
                 <!--電話番号-->
-                <div class="pass">
+                <div class="pwd">
                 <label>
-                    <input type="password" name="pass" required placeholder="Password">
+                    <input type="password" name="pwd" required placeholder="Password">
                 </label>
                 </div>
                 <button type="submit">登録する</button>
