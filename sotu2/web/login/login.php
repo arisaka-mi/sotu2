@@ -2,21 +2,12 @@
 session_start();
 $email = isset($_POST['email']) ? $_POST['email'] : '';
 $pwd = isset($_POST['pwd']) ? $_POST['pwd'] : '';
-$dsn = "mysql:host=localhost; dbname=sotu2; charset=utf8";
-$username = "root";
-$password = "";
-try {
-    $dbh = new PDO($dsn, $username, $password);
-} catch (PDOException $e) {
-    echo json_encode([
-        "status" => "error",
-        "message" => "データベース接続に失敗しました: " . $e->getMessage()
-    ], JSON_UNESCAPED_UNICODE);
-    exit();
-}
+
+// DB接続設定
+require_once('config.php');
 
 $sql = "SELECT * FROM User WHERE email = :email";
-$stmt = $dbh->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindValue(':email', $email);
 $stmt->execute();
 $member = $stmt->fetch();

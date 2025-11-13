@@ -1,5 +1,5 @@
- <?php
-        session_start();
+<?php
+    session_start();
 ?>
 
 <!DOCTYPE html>
@@ -81,6 +81,9 @@
         </style>
     </head>
     <body>
+        <header>
+            <!--グローバルナビ未完成-->
+        </header>
         <main>
             <h1>新規会員登録</h1>
             <form action="register.php" method="post">

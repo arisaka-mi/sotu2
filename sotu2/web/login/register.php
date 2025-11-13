@@ -1,18 +1,11 @@
 <?php
 $u_name = $_POST['u_name'];
-$u_name_id = $_POST['u_name_id']; // ← フォームにusernameがある場合
+$u_name_id = $_POST['u_name_id'];
 $email = $_POST['email'];
 $pwd = password_hash($_POST['pwd'], PASSWORD_DEFAULT);
 
-$dsn = "mysql:host=localhost; dbname=sotu2; charset=utf8";
-$username = "root";
-$password = "";
-
-try {
-    $dbh = new PDO($dsn, $username, $password);
-} catch (PDOException $e) {
-    exit('データベース接続失敗: ' . $e->getMessage());
-}
+// DB接続設定
+require_once('config.php');
 
 $style = '
     <style>

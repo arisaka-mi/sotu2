@@ -3,24 +3,14 @@
 session_start();
 
 // DB接続設定
-$host = 'localhost';
-$dbname = 'kadai';
-$user = 'root';
-$pass = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die('DB接続エラー: ' . $e->getMessage());
-}
+require_once('config.php');
 
 // ログイン済みかチェック
-if (!isset($_SESSION['id'])) {
+if (!isset($_SESSION['user_id'])) {
     die('ログインしてください');
 }
 
-$userId = $_SESSION['id'];
+$userId = $_SESSION['user_id'];
 
 // 現在のユーザー情報を取得
 $stmt = $pdo->prepare("SELECT name, image FROM users WHERE id = :id");
