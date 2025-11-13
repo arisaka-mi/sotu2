@@ -24,3 +24,7 @@ create table Parsonal_color (
     pc_name varchar(50),
     pc_num int(10)
 );
+
+create table Follow (
+    flw_id int()
+)

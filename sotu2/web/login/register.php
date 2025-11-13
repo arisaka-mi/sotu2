@@ -7,6 +7,10 @@ $pwd = password_hash($_POST['pwd'], PASSWORD_DEFAULT);
 // DB接続設定
 require_once('config.php');
 
+
+// パスワードハッシュ
+$pwd_hash = password_hash($pwd, PASSWORD_DEFAULT);
+
 $style = '
     <style>
         body {
