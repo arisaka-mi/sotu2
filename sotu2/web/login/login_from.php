@@ -10,7 +10,7 @@
         height: 100vh;
         display: flex;
         font-family: sans-serif;
-        background: url('images/gazo.png') no-repeat center center/cover; /* ← 背景画像を設定 */
+        background: url('img/gazo.png') no-repeat center center/cover; /* ← 背景画像を設定 */
     }
 
     .left, .right {
@@ -114,19 +114,19 @@
 </head>
 <body>
     <div class="left">
-        <img class="logo" src="images/K024C2048.png" alt="BeautyConnect">
+        <img class="logo" src="img/K024C2048.png" alt="BeautyConnect">
     </div>
     <div class="right">
         <main>
             <form action="login.php" method="post">
                 <div>
                     <label>
-                        <input type="text" name="mail" required placeholder="Email Address">
+                        <input type="text" name="email" required placeholder="Email Address">
                     </label>
                 </div>
                 <div>
                     <label>
-                        <input type="password" name="pass" required placeholder="Password">
+                        <input type="password" name="pwd" required placeholder="Password">
                     </label>
                 </div>
                 <button type="submit">Login</button>
