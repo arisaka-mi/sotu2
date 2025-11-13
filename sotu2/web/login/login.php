@@ -1,6 +1,6 @@
 <?php
 session_start();
-$mail = isset($_POST['email']) ? $_POST['email'] : '';
+$email = isset($_POST['email']) ? $_POST['email'] : '';
 $pwd = isset($_POST['pwd']) ? $_POST['pwd'] : '';
 $dsn = "mysql:host=localhost; dbname=sotu2; charset=utf8";
 $username = "root";

@@ -1,10 +1,10 @@
 <?php
-$name = $_POST['name'];
-$user_name = $_POST['username']; // ← フォームにusernameがある場合
-$mail = $_POST['mail'];
-$pass = password_hash($_POST['pass'], PASSWORD_DEFAULT);
+$u_name = $_POST['u_name'];
+$u_name_id = $_POST['u_name_id']; // ← フォームにusernameがある場合
+$email = $_POST['email'];
+$pwd = password_hash($_POST['pwd'], PASSWORD_DEFAULT);
 
-$dsn = "mysql:host=localhost; dbname=kadai; charset=utf8";
+$dsn = "mysql:host=localhost; dbname=sotu2; charset=utf8";
 $username = "root";
 $password = "";
 
@@ -39,25 +39,25 @@ $style = '
     </style>
 ';
 
-$sql = "SELECT * FROM users WHERE mail = :mail";
+$sql = "SELECT * FROM User WHERE email = :email";
 $stmt = $dbh->prepare($sql);
-$stmt->bindValue(':mail', $mail);
+$stmt->bindValue(':email', $email);
 $stmt->execute();
 $member = $stmt->fetch();
 
-if ($member && $member['mail'] === $mail) {
+if ($member && $member['email'] === $email) {
     $msg = '同じメールアドレスが存在します。';
     $link = '<a href="signup.php">戻る</a>';
-} else if($member && $member['username'] === $user_name) {
+} else if($member && $member['u_name_id'] === $u_name_id) {
     $msg = '同じユーザー名が存在します。';
     $link = '<a href="signup.php">戻る</a>';
 } else {
-    $sql = "INSERT INTO users(name, username, mail, pass) VALUES (:name, :username, :mail, :pass)";
+    $sql = "INSERT INTO User(email, pwd, u_name, u_name_id) VALUES (:email, :pwd, :u_name, :u_name_id)";
     $stmt = $dbh->prepare($sql);
-    $stmt->bindValue(':name', $name);
-    $stmt->bindValue(':username', $user_name);
-    $stmt->bindValue(':mail', $mail);
-    $stmt->bindValue(':pass', $pass);
+    $stmt->bindValue(':u_name', $u_name);
+    $stmt->bindValue(':u_name_id', $u_name_id);
+    $stmt->bindValue(':email', $email);
+    $stmt->bindValue(':pwd', $pwd);
     $stmt->execute();
 
     $msg = '会員登録が完了しました。';
