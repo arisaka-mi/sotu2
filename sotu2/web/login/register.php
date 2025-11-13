@@ -61,7 +61,7 @@ if ($member && $member['email'] === $email) {
     $stmt->execute();
 
     $msg = '会員登録が完了しました。';
-    $link = '<a href="login_form.php">ログインページへ</a>';
+    $link = '<a href="login_from.php">ログインページへ</a>';
 }
 ?>
 

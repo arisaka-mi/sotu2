@@ -1,9 +1,9 @@
 <?php
 session_start();
-$username = isset($_SESSION['name']) ? $_SESSION['name'] : '';
+$u_name_id = isset($_SESSION['u_name']) ? $_SESSION['u_name'] : '';
 
-if (isset($_SESSION['id'])) {
-    $msg = 'ようこそ ' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . 'さん';
+if (isset($_SESSION['user_id'])) {
+    $msg = 'ようこそ ' . htmlspecialchars($u_name_id, ENT_QUOTES, 'UTF-8') . 'さん';
     // ホーム画面に遷移
     $link1 = '
         <form action="home.html" method="post">
@@ -94,7 +94,7 @@ if (isset($_SESSION['id'])) {
         <h1 class="text"><?php echo $msg; ?></h1>
         <p class="url"><?php echo $link1; ?></p>
 
-        <?php if (isset($_SESSION['id'])): ?>
+        <?php if (isset($_SESSION['user_id'])): ?>
             <p class="url"><?php echo $link2; ?></p>
         <?php endif; ?>
     </main>
