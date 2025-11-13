@@ -17,7 +17,7 @@
                 height: 100vh;          /* 画面の高さ全体を使う */
                 margin: 0;
                 font-family: sans-serif;
-                background: url('images/gazo.png') no-repeat center center/cover; /* ← 背景画像を設定 */
+                background: url('img/gazo.png') no-repeat center center/cover; /* ← 背景画像を設定 */
             }
 
            main {
