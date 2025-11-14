@@ -25,7 +25,7 @@ if (!$user) {
 $img_icon = $user['pro_img'] ?? 'default_icon.png'; // デフォルトアイコン
 $u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
 $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
-$introduction = htmlspecialchars($user['introduction'] ?? '', ENT_QUOTES, 'UTF-8'); // 自己紹介
+$u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8'); // 自己紹介
 ?>
 
 <!DOCTYPE html>
@@ -54,10 +54,13 @@ $introduction = htmlspecialchars($user['introduction'] ?? '', ENT_QUOTES, 'UTF-8
     
     <!-- ユーザーID -->
     <h2>@<?= $u_name_id ?></h2>
+
+    <!--自己紹介-->
+    <p><?= $u_text ?></p>
     
     <!-- ボタン -->
     <a href="profile_setting.php" class="btn">プロフィール編集</a>
-    <a href="diagnosis.php" class="btn">診断画面へ</a>
+    <a href="" class="btn">診断画面へ</a><!-- 未定 -->
 </div>
 </body>
 </html>

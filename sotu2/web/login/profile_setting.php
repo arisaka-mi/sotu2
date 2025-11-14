@@ -42,6 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $u_name = $_POST['u_name'] ?? '';
     $u_name_id = $_POST['u_name_id'] ?? '';
+    $u_text = $_POST['u_text'] ?? '';
+    $hight = $_POST['hight'] ?? '';
     $pro_img = $user['pro_img']; // 現在の画像パス
 
     $image_uploaded = !empty($_FILES['pro_img']['name']);
@@ -74,26 +76,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($image_uploaded) {
             $stmt = $pdo->prepare("
                 UPDATE User 
-                SET u_name = :u_name, u_name_id = :u_name_id, pro_img = :pro_img
+                SET u_name = :u_name, u_name_id = :u_name_id, u_text = :u_text, hight = :hight, pro_img = :pro_img
                 WHERE user_id = :user_id
             ");
             $stmt->bindValue(':pro_img', $pro_img, PDO::PARAM_STR);
         } else {
             $stmt = $pdo->prepare("
                 UPDATE User 
-                SET u_name = :u_name, u_name_id = :u_name_id
+                SET u_name = :u_name, u_name_id = :u_name_id, u_text = :u_text, hight = :hight 
                 WHERE user_id = :user_id
             ");
-        }
+        } 
 
         $stmt->bindValue(':u_name', $u_name, PDO::PARAM_STR);
         $stmt->bindValue(':u_name_id', $u_name_id, PDO::PARAM_STR);
+        $stmt->bindValue(':u_text', $u_text, PDO::PARAM_STR);
+        $stmt->bindValue(':hight', $hight, PDO::PARAM_STR);
         $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             // セッション更新
             $_SESSION['u_name'] = $u_name;
             $_SESSION['u_name_id'] = $u_name_id;
+            $_SESSION['u_text'] = $u_text;
+            $_SESSION['hight'] = $hight;
             if ($image_uploaded) $_SESSION['pro_img'] = $pro_img;
 
             header('Location: profile.php');
@@ -110,6 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $img_icon = $user['pro_img'] ?? 'dflt_icon.jpg';
 $u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
 $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
+$u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8');
+$hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
 ?>
 
 <!DOCTYPE html>
@@ -118,17 +126,68 @@ $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
         <meta charset="UTF-8">
         <title>プロフィール編集</title>
         <style>
-            body { font-family: sans-serif; background: #f9f9f9; margin:0; padding:0;}
-            .container { max-width:500px; margin:50px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-            h1 { text-align:center; margin-bottom:20px; }
-            .form-group { margin-bottom:15px; }
-            label { display:block; margin-bottom:5px; font-weight:bold; }
-            input[type="text"], textarea { width:100%; padding:8px; box-sizing:border-box; }
-            input[type="file"] { padding:5px; }
-            .profile-icon { width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:15px; display:block;}
-            .btn { display:inline-block; padding:10px 20px; background:#007bff; color:#fff; text-decoration:none; border-radius:5px; border:none; cursor:pointer; }
-            .btn:hover { background:#0056b3; }
-            .error { color:red; margin-bottom:15px; }
+            body { 
+                font-family: sans-serif; 
+                background: #f9f9f9; 
+                margin:0; 
+                padding:0;
+            }
+            .container { 
+                max-width:500px; 
+                margin:50px auto; 
+                padding:20px; background:#fff; 
+                border-radius:10px; 
+                box-shadow:0 0 10px rgba(0,0,0,0.1);
+            }
+            h1 { 
+                text-align:center; 
+                margin-bottom:20px; 
+            }
+            .form-group { 
+                margin-bottom:15px; 
+            }
+            label { 
+                display:block; 
+                margin-bottom:5px; 
+                font-weight:bold; 
+            }
+            input[type="text"], textarea { 
+                width:100%; 
+                padding:8px;
+                box-sizing:border-box; 
+            }
+            input[type="file"] { 
+                padding:5px; 
+            }
+            .profile-icon { 
+                width:100px; 
+                height:100px; 
+                border-radius:50%; 
+                object-fit:cover; 
+                margin-bottom:15px; 
+                display:block;
+            }
+            .btn { 
+                display:inline-block; 
+                padding:10px 20px; 
+                background:#007bff; 
+                color:#fff; 
+                text-decoration:none; 
+                border-radius:5px; 
+                border:none; 
+                cursor:pointer; 
+            }
+            .btn:hover { 
+                background:#0056b3; 
+            }
+            .error { 
+                color:red; 
+                margin-bottom:15px; 
+            }
+            a {
+                color: #ff4066ff;
+                text-decoration: none;
+            }
         </style>
     </head>
 <body>
@@ -154,10 +213,23 @@ $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
                     <label for="u_name_id">ユーザーID</label>
                     <input type="text" name="u_name_id" id="u_name_id" value="<?= $u_name_id ?>" required>
                 </div>
+                <div class="form-group">
+                    <label for="u_text">自己紹介</label>
+                    <textarea name="u_text" id="u_text" rows="5"><?= $u_text ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="hight">身長</label>
+                    <input type="text" name="hight" id="hight" value="<?= $hight ?>" required>
+                </div>
+                
+
 
                 <button type="submit" class="btn">更新する</button>
                 <a href="profile.php" class="btn" style="background:#6c757d;">キャンセル</a>
             </form>
+
+            <p><a href="logout.php">ログアウト</a></p>
+
         </div>
     </main>
 </body>
