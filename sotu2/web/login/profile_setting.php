@@ -221,6 +221,13 @@ $hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
                     <label for="hight">身長</label>
                     <input type="text" name="hight" id="hight" value="<?= $hight ?>" required>
                 </div>
+
+                <div>
+                    骨格:bt_id（編集不可）
+                </div>
+                <div>
+                    パーソナルカラー:pc_id（編集不可）
+                </div>
                 
 
 
