@@ -54,6 +54,7 @@ $u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8'); // 自�
         object-fit: cover;
         margin: 0 auto 20px; /* ←横中央寄せ */
         display: block;      /* ←これが必要 */
+        border: 1px solid #ebebebff;
     }
 
     h1 { 

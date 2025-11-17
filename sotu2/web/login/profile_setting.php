@@ -128,20 +128,14 @@ $hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
         <style>
             body { 
                 font-family: sans-serif; 
-                background: #f9f9f9; 
                 margin:0; 
                 padding:0;
             }
             .container { 
                 max-width:500px; 
                 margin:50px auto; 
-                padding:20px; background:#fff; 
+                padding:20px; 
                 border-radius:10px; 
-                box-shadow:0 0 10px rgba(0,0,0,0.1);
-            }
-            h1 { 
-                text-align:center; 
-                margin-bottom:20px; 
             }
             .form-group { 
                 margin-bottom:15px; 
@@ -149,7 +143,7 @@ $hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
             label { 
                 display:block; 
                 margin-bottom:5px; 
-                font-weight:bold; 
+                font-weight:bold;
             }
             input[type="text"], textarea { 
                 width:100%; 
@@ -166,6 +160,7 @@ $hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
                 object-fit:cover; 
                 margin-bottom:15px; 
                 display:block;
+                border: 1px solid #ebebebff;
             }
             .btn { 
                 display:inline-block; 
@@ -193,7 +188,6 @@ $hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
 <body>
     <main>
         <div class="container">
-            <h1>プロフィール編集</h1>
 
             <?php if(isset($error)) echo "<p class='error'>{$error}</p>"; ?>
 
