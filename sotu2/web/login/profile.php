@@ -34,14 +34,54 @@ $u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8'); // 自�
 <meta charset="UTF-8">
 <title>プロフィール</title>
 <style>
-    body { font-family: sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
-    .profile-container { max-width: 500px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    .profile-icon { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; }
-    h1 { margin: 0; font-size: 24px; }
-    h2 { margin: 5px 0 20px 0; font-size: 18px; color: #555; }
-    p { margin-bottom: 20px; line-height: 1.5; }
-    .btn { display: inline-block; padding: 10px 20px; margin-right: 10px; background: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
-    .btn:hover { background: #0056b3; }
+    body { 
+        font-family: sans-serif; 
+        margin: 0; 
+        padding: 0; 
+    }
+    .profile-container { 
+        max-width: 500px; 
+        margin: 50px auto; 
+        padding: 20px; 
+        background: #fff; 
+        border-radius: 10px; 
+        text-align: center;
+    }
+    .profile-icon {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 20px; /* ←横中央寄せ */
+        display: block;      /* ←これが必要 */
+    }
+
+    h1 { 
+        margin: 0; 
+        font-size: 24px;
+    }
+    h2 { 
+        margin: 5px 0 20px 0; 
+        font-size: 18px; 
+        color: #555; 
+    }
+    p { 
+        margin-bottom: 20px; 
+        line-height: 1.5; 
+    }
+    .btn { 
+        display: inline-block; 
+        padding: 10px 20px; 
+        margin-right: 10px; 
+        background: #c6c6c6ff; 
+        color: #fff; 
+        text-decoration: none; 
+        border-radius: 5px; 
+        width: 140px;
+    }
+    .btn:hover { 
+        background: #c6c6c6ff;
+    }
 </style>
 </head>
 <body>
