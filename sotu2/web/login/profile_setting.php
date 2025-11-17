@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 // 表示用
-$img_icon = $user['pro_img'] ?? 'dflt_icon.jpg';
+$img_icon = $user['pro_img'] ?? 'u_img/dflt_icon.jpg';
 $u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
 $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
 $u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8');
