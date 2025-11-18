@@ -26,7 +26,10 @@ $img_icon = $user['pro_img'] ?? 'default_icon.png'; // デフォルトアイコ�
 $u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
 $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
 $u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8'); // 自己紹介
-?>
+
+//include 'nav.php';ナビゲーションです
+  ?>
+
 
 <!DOCTYPE html>
 <html lang="ja">
