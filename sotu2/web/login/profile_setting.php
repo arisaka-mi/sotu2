@@ -153,15 +153,16 @@ $hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
             input[type="file"] { 
                 padding:5px; 
             }
-            .profile-icon { 
-                width:100px; 
-                height:100px; 
-                border-radius:50%; 
-                object-fit:cover; 
-                margin-bottom:15px; 
-                display:block;
+            .profile-icon {
+                display: block;
+                margin: 0 auto 15px;  /* ← ここで中央寄せ */
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                object-fit: cover;
                 border: 1px solid #ebebebff;
             }
+
             .btn { 
                 display:inline-block; 
                 padding:10px 20px; 
@@ -198,6 +199,8 @@ $hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
                     <input type="file" name="pro_img" id="pro_img" accept="image/*">
                 </div>
 
+                <h1>ユーザー編集</h1>
+
                 <div class="form-group">
                     <label for="u_name">ユーザー名</label>
                     <input type="text" name="u_name" id="u_name" value="<?= $u_name ?>" required>
@@ -211,6 +214,9 @@ $hight = htmlspecialchars($user['hight'] ?? '', ENT_QUOTES, 'UTF-8');
                     <label for="u_text">自己紹介</label>
                     <textarea name="u_text" id="u_text" rows="5"><?= $u_text ?></textarea>
                 </div>
+
+                <h1>あなたのタイプ</h1>
+
                 <div class="form-group">
                     <label for="hight">身長</label>
                     <input type="text" name="hight" id="hight" value="<?= $hight ?>" required>

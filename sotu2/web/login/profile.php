@@ -101,7 +101,7 @@ $u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8'); // 自�
     
     <!-- ボタン -->
     <a href="profile_setting.php" class="btn">プロフィール編集</a>
-    <a href="" class="btn">診断画面へ</a><!-- 未定 -->
+    <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
 </div>
 </body>
 </html>
