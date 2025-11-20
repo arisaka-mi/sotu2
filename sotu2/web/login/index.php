@@ -11,7 +11,7 @@ if (isset($_SESSION['user_id'])) {
         </form>
     ';
     // プロフィール画面に遷移
-    $link2 = '<form action="profile.php" method="post">
+    $link2 = '<form action="../profile/profile.php" method="post">
             <button type="submit">プロフィールに移動</button>
             </form>';
     $style = '
