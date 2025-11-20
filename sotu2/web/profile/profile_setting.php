@@ -17,16 +17,22 @@ $stmt->execute();
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
-    echo "ユーザー情報が見つかりません。";
-    exit();
+    exit("ユーザー情報が見つかりません。");
 }
 
 // エラー初期化
 $error = "";
 
-// 画像リサイズ関数（GD）
-function resizeImage($file_tmp, $save_path, $max_width = 300, $max_height = 300) {
-    list($orig_width, $orig_height) = getimagesize($file_tmp);
+// 画像リサイズ関数（GDが有効な場合）
+function resizeImageGD($file_tmp, $save_path, $max_width = 300, $max_height = 300) {
+    if (!function_exists('imagecreatefromstring')) return false;
+
+    $image_info = getimagesize($file_tmp);
+    if (!$image_info) return false;
+
+    $orig_width = $image_info[0];
+    $orig_height = $image_info[1];
+
     $ratio = min($max_width / $orig_width, $max_height / $orig_height, 1);
     $new_width = (int)($orig_width * $ratio);
     $new_height = (int)($orig_height * $ratio);
@@ -36,6 +42,7 @@ function resizeImage($file_tmp, $save_path, $max_width = 300, $max_height = 300)
     imagecopyresampled($dst, $src, 0, 0, 0, 0, $new_width, $new_height, $orig_width, $orig_height);
 
     $result = imagejpeg($dst, $save_path, 80);
+
     imagedestroy($src);
     imagedestroy($dst);
     return $result;
@@ -46,17 +53,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $u_name = $_POST['u_name'] ?? '';
     $u_name_id = $_POST['u_name_id'] ?? '';
     $u_text = $_POST['u_text'] ?? '';
-    $height = $_POST['hight'] ?? '';
+    $height = $_POST['height'] ?? '';
     $pro_img = $user['pro_img']; // 現在の画像パス
 
     $image_uploaded = !empty($_FILES['pro_img']['name']);
 
-    // --- 画像アップロード処理 ---
     if ($image_uploaded) {
 
-        // MIME チェック（セキュリティ）
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!in_array($_FILES['pro_img']['type'], $allowed_types)) {
+
+        // getimagesizeで安全チェック
+        $image_info = getimagesize($_FILES['pro_img']['tmp_name']);
+        if (!$image_info || !in_array($image_info['mime'], $allowed_types)) {
             $error = "画像ファイル（jpg / png / gif）のみアップロードできます。";
         }
 
@@ -66,65 +74,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!$error) {
-            // 絶対パス（保存用）
             $upload_dir = __DIR__ . '/u_icon/';
-
-            // 相対パス（DB保存用）
             $relative_dir = 'u_icon/';
-
-            // フォルダ作成
             if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
 
             $file_tmp = $_FILES['pro_img']['tmp_name'];
             $file_name = uniqid() . '_' . basename($_FILES['pro_img']['name']);
-
-            // 保存先（絶対パス）
             $save_path = $upload_dir . $file_name;
-
-            // DBに保存するパス（相対）
             $file_path_for_db = $relative_dir . $file_name;
 
-            if (resizeImage($file_tmp, $save_path)) {
-                $pro_img = $file_path_for_db;
+            // GDが有効ならリサイズ、無ければ move_uploaded_file
+            if (function_exists('imagecreatefromstring')) {
+                if (!resizeImageGD($file_tmp, $save_path)) {
+                    $error = "画像のアップロードに失敗しました。";
+                } else {
+                    $pro_img = $file_path_for_db;
+                }
             } else {
-                $error = "画像のアップロードに失敗しました。";
+                if (!move_uploaded_file($file_tmp, $save_path)) {
+                    $error = "画像のアップロードに失敗しました。";
+                } else {
+                    $pro_img = $file_path_for_db;
+                }
             }
         }
     }
 
-    // --- DB更新 ---
+    // DB更新
     if (!$error) {
-        if ($image_uploaded) {
-            $stmt = $pdo->prepare("
-                UPDATE User 
-                SET u_name = :u_name, u_name_id = :u_name_id, u_text = :u_text,
-                    hight = :hight, pro_img = :pro_img
-                WHERE user_id = :user_id
-            ");
-            $stmt->bindValue(':pro_img', $pro_img, PDO::PARAM_STR);
+        $sql = $image_uploaded
+            ? "UPDATE User SET u_name = :u_name, u_name_id = :u_name_id, u_text = :u_text, height = :height, pro_img = :pro_img WHERE user_id = :user_id"
+            : "UPDATE User SET u_name = :u_name, u_name_id = :u_name_id, u_text = :u_text, height = :height WHERE user_id = :user_id";
 
-        } else {
-            $stmt = $pdo->prepare("
-                UPDATE User 
-                SET u_name = :u_name, u_name_id = :u_name_id,
-                    u_text = :u_text, hight = :hight
-                WHERE user_id = :user_id
-            ");
-        }
-
+        $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':u_name', $u_name, PDO::PARAM_STR);
         $stmt->bindValue(':u_name_id', $u_name_id, PDO::PARAM_STR);
         $stmt->bindValue(':u_text', $u_text, PDO::PARAM_STR);
         $stmt->bindValue(':height', $height, PDO::PARAM_STR);
         $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+        if ($image_uploaded) $stmt->bindValue(':pro_img', $pro_img, PDO::PARAM_STR);
 
         if ($stmt->execute()) {
-
-            // セッションも更新
+            // セッション更新
             $_SESSION['u_name'] = $u_name;
             $_SESSION['u_name_id'] = $u_name_id;
             $_SESSION['u_text'] = $u_text;
-            $_SESSION['hight'] = $height;
+            $_SESSION['height'] = $height;
             if ($image_uploaded) $_SESSION['pro_img'] = $pro_img;
 
             header('Location: profile.php');
