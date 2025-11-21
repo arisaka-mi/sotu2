@@ -1,0 +1,7 @@
+CREATE TABLE posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    image_path VARCHAR(255) NOT NULL,
+    description TEXT,
+    tags VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
