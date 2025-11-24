@@ -1,18 +1,33 @@
-<?php
-session_start();
-require_once('../login/config.php'); // DB接続
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>投稿画面</title>
+</head>
+<body>
+    <header>
+        <!--グローバルナビ実装予定-->
+    </header>
 
-// ログインチェック
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login/login_form.php');
-    exit();
-}
+    <main>
+        <h1>新規投稿</h1>
 
-$user_id = $_SESSION['user_id'];
-$error = "";
-$success = "";
+        <form action="upload.php" method="post" enctype="multipart/form-data">
 
+            <!-- 画像 -->
+            <label>画像を選択：</label><br>
+            <input type="file" name="image" required><br><br>
 
+            <!-- 説明文 -->
+            <label>説明文：</label><br>
+            <textarea name="content_text" rows="4" cols="40"></textarea><br><br>
 
+            <!-- タグ（複数選択） -->
+            <label>タグ（カンマ区切り）：</label><br>
+            <input type="text" name="tags" placeholder="メイク, スキンケア"><br><br>
 
-?>
+            <button type="submit">投稿する</button>
+        </form>
+    </main>
+</body>
+</html>
