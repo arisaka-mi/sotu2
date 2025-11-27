@@ -130,8 +130,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// 表示用アイコン（NULL, 空文字, ファイル不存在なら default.png）
+$img_icon = $user['pro_img'] ?? '';  
+$img_path = "u_icon/" . $img_icon;
+
+// 実際のファイルが存在しなかったら default.png に変更
+if (empty($img_icon) || !file_exists(__DIR__ . "/u_icon/" . $img_icon)) {
+    $img_path = "u_icon/default.png";
+}
+
+
 // 表示用
-$img_icon = $user['pro_img'] ?? 'u_icon/dflt_icon.png';
 $u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
 $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
 $u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8');
@@ -208,7 +217,7 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES, 'UTF-8');
 
     <form action="" method="post" enctype="multipart/form-data">
 
-        <img src="<?= htmlspecialchars($img_icon, ENT_QUOTES) ?>" class="profile-icon">
+        <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" class="profile-icon">
 
         <div class="form-group">
             <label for="pro_img">プロフィール画像</label>

@@ -48,6 +48,16 @@ $u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
 $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
 $u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8'); // 自己紹介
 
+// プロフィール画像（NULL, 空文字, ファイル不存在なら default.png）
+$img_icon = $user['pro_img'] ?? '';
+
+$img_path = "u_img/" . $img_icon;
+
+// 画像が無い場合 default.png に差し替え
+if (empty($img_icon) || !file_exists(__DIR__ . "/u_img/" . $img_icon)) {
+    $img_path = "u_img/default.png";
+}
+
 // フォロー数（自分がフォローしている人数）
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM Follow WHERE follower_id = :id");
 $stmt->execute([':id' => $profile_user_id]);
@@ -153,9 +163,11 @@ $follower_count = $stmt->fetchColumn();
 </head>
 <body>
 <div class="profile-container">
-    <!-- アイコン -->
+    <!-- アイコン
     <img src="<?= htmlspecialchars($img_icon, ENT_QUOTES) ?>" alt="プロフィール画像" class="profile-icon">
-    
+     -->
+    <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" alt="プロフィール画像" class="profile-icon">
+
     <!-- ユーザー名 -->
     <h1><?= $u_name ?></h1>
     
