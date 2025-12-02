@@ -129,7 +129,7 @@ body { margin:0; padding:0; font-family:sans-serif; background:#FFEB3B; display:
 .q-number { font-weight:bold; font-size:16px; background:#FF9800; color:#fff; padding:6px 12px; border-radius:10px; width:max-content; }
 .q-text { font-size:22px; font-weight:bold; }
 .choice-form { margin-bottom:12px; }
-.choice-btn { width:100%; padding:16px; font-size:16px; border:none; border-radius:15px; text-align:left; background:#f5f5f5; cursor:pointer; transition:0.2s; }
+.choice-btn { width: 500px; padding:16px; font-size:16px; border:none; border-radius:15px; text-align:left; background:#f5f5f5; cursor:pointer; transition:0.2s; }
 .choice-btn:hover { background:#FFCC80; }
 .image-area { flex:2; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .image-area img { width:100%; height:100%; object-fit:cover; border-radius:20px; display:block; }
