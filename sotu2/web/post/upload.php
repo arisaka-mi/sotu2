@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         echo "投稿が完了しました！<br>";
-        echo "<a href='index.php'>戻る</a>";
+        echo "<a href='post.php'>戻る</a>";
 
     } catch (PDOException $e) {
         echo "データベースエラー：" . $e->getMessage();

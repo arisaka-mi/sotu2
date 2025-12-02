@@ -101,7 +101,7 @@ function render_comments($comments, $level = 0) {
             </form>
 
             <!-- コメントフォーム -->
-            <form method="post" action="www/sotu2/web/home/add_comment.php">
+            <form method="post" action="./add_comment.php">
                 <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
                 <textarea name="content" placeholder="コメント..." required></textarea>
                 <button type="submit">コメント</button>

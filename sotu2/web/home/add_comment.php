@@ -14,5 +14,5 @@ if ($post_id && $content !== '') {
     $stmt->execute([$post_id, $user_id, $content, $parent_cmt_id ?: null]);
 }
 
-header("Location: index.php");
+header("Location: timeline.php");
 exit;
