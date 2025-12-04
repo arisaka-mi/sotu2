@@ -1,4 +1,16 @@
 <?php
+//ログイン有効期限
+$session_lifetime = 3 * 24 * 60 * 60; // 3日 * 24時間 * 60分 * 60秒
+
+// セッションクッキーの有効期限を延長
+session_set_cookie_params([
+    'lifetime' => $session_lifetime,
+    'path' => '/',
+    'domain' => '', // 必要に応じてドメイン指定
+    'secure' => isset($_SERVER['HTTPS']), // HTTPSの場合はtrue
+    'httponly' => true,
+    'samesite' => 'Lax' // Strict / Lax / None
+]);
 session_start();
 $email = isset($_POST['email']) ? $_POST['email'] : '';
 $pwd = isset($_POST['pwd']) ? $_POST['pwd'] : '';

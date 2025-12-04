@@ -114,7 +114,7 @@
 </head>
 <body>
     <div class="left">
-        <img class="logo" src="images/test_sample.jpg" alt="BeautyConnect">
+        <img class="logo" src="img/test_sample.jpg" alt="BeautyConnect">
     </div>
     <div class="right">
         <main>
