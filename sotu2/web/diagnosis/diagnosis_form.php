@@ -30,7 +30,7 @@ $error = "";
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>診断メニュー（中央配置＋丸角安定版）</title>
+<title>診断メニュー</title>
 <style>
 :root{
   --edge: clamp(40px, 10vh, 90px);     /* 上/右/下のオレンジ余白 */
@@ -162,9 +162,8 @@ p.lead {
 
       <a href="body_type.php" class="menu-btn bone">骨格診断</a>
       <a href="parsonal_color.php" class="menu-btn color">パーソナルカラー診断</a>
+      <a href="./profile/profile_setting.php">もどる</a>
   </div>
-
 </div>
-
 </body>
 </html>
