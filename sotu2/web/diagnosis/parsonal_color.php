@@ -172,12 +172,13 @@ body {
 .q-text { 
     font-size:22px; 
     font-weight:bold; 
+    width: 520px;
 }
 .choice-form { 
     margin-bottom:12px; 
 }
 .choice-btn { 
-    width:100%; 
+    width:500px; 
     padding:16px; 
     font-size:16px; 
     border:none; 

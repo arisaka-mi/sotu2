@@ -6,7 +6,6 @@ if (!isset($_SESSION['pc_score'])) {
 }
 
 $score = $_SESSION['pc_score'];
-session_destroy();
 
 arsort($score);
 $types = array_keys($score);
