@@ -41,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ]);
         $post_id = $pdo->lastInsertId();
 
+
         // 2. タグ処理
         foreach ($tag_names as $tag_name) {
             // Tagに存在確認
