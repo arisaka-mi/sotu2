@@ -1,8 +1,7 @@
 <?php
 session_start();
-require_once('../login/config.php'); // DB接続
+require_once('../login/config.php');
 
-// ログインチェック
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../login/login_form.php');
     exit();
@@ -10,23 +9,19 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// DBからユーザー情報取得
+// ユーザー情報取得
 $stmt = $pdo->prepare("SELECT * FROM User WHERE user_id = :user_id");
 $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->execute();
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user) {
-    exit("ユーザー情報が見つかりません。");
-}
+if (!$user) exit("ユーザー情報が見つかりません。");
 
-// エラー初期化
 $error = "";
 
-// 画像リサイズ関数（GDが有効な場合）
+// 画像リサイズ関数
 function resizeImageGD($file_tmp, $save_path, $max_width = 300, $max_height = 300) {
     if (!function_exists('imagecreatefromstring')) return false;
-
     $image_info = getimagesize($file_tmp);
     if (!$image_info) return false;
 
@@ -39,7 +34,7 @@ function resizeImageGD($file_tmp, $save_path, $max_width = 300, $max_height = 30
 
     $src = imagecreatefromstring(file_get_contents($file_tmp));
     $dst = imagecreatetruecolor($new_width, $new_height);
-    imagecopyresampled($dst, $src, 0, 0, 0, 0, $new_width, $new_height, $orig_width, $orig_height);
+    imagecopyresampled($dst, $src, 0,0,0,0, $new_width,$new_height, $orig_width,$orig_height);
 
     $result = imagejpeg($dst, $save_path, 80);
 
@@ -49,41 +44,35 @@ function resizeImageGD($file_tmp, $save_path, $max_width = 300, $max_height = 30
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $u_name = $_POST['u_name'] ?? '';
     $u_name_id = $_POST['u_name_id'] ?? '';
     $u_text = $_POST['u_text'] ?? '';
     $height = $_POST['height'] ?? '';
-    $pro_img = $user['pro_img']; // 現在の画像パス
+    $pro_img = $user['pro_img']; // 現在の画像
 
     $image_uploaded = !empty($_FILES['pro_img']['name']);
 
     if ($image_uploaded) {
-
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-
-        // getimagesizeで安全チェック
+        $allowed_types = ['image/jpeg','image/png','image/gif'];
         $image_info = getimagesize($_FILES['pro_img']['tmp_name']);
-        if (!$image_info || !in_array($image_info['mime'], $allowed_types)) {
-            $error = "画像ファイル（jpg / png / gif）のみアップロードできます。";
+        if (!$image_info || !in_array($image_info['mime'],$allowed_types)) {
+            $error = "画像ファイル（jpg/png/gif）のみアップロード可能です。";
         }
 
-        // サイズチェック（2MB）
-        if ($_FILES['pro_img']['size'] > 2 * 1024 * 1024) {
+        if ($_FILES['pro_img']['size'] > 2*1024*1024) {
             $error = "画像は2MB以下にしてください。";
         }
 
         if (!$error) {
-            $upload_dir = __DIR__ . '/u_icon/';
-            $relative_dir = 'u_icon/';
-            if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+            $upload_dir = __DIR__ . '/u_img/';
+            $relative_dir = 'u_img/';
+            if (!is_dir($upload_dir)) mkdir($upload_dir,0755,true);
 
             $file_tmp = $_FILES['pro_img']['tmp_name'];
             $file_name = uniqid() . '_' . basename($_FILES['pro_img']['name']);
             $save_path = $upload_dir . $file_name;
             $file_path_for_db = $relative_dir . $file_name;
 
-            // GDが有効ならリサイズ、無ければ move_uploaded_file
             if (function_exists('imagecreatefromstring')) {
                 if (!resizeImageGD($file_tmp, $save_path)) {
                     $error = "画像のアップロードに失敗しました。";
@@ -100,11 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // DB更新
     if (!$error) {
         $sql = $image_uploaded
-            ? "UPDATE User SET u_name = :u_name, u_name_id = :u_name_id, u_text = :u_text, height = :height, pro_img = :pro_img WHERE user_id = :user_id"
-            : "UPDATE User SET u_name = :u_name, u_name_id = :u_name_id, u_text = :u_text, height = :height WHERE user_id = :user_id";
+            ? "UPDATE User SET u_name=:u_name,u_name_id=:u_name_id,u_text=:u_text,height=:height,pro_img=:pro_img WHERE user_id=:user_id"
+            : "UPDATE User SET u_name=:u_name,u_name_id=:u_name_id,u_text=:u_text,height=:height WHERE user_id=:user_id";
 
         $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':u_name', $u_name, PDO::PARAM_STR);
@@ -112,39 +100,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bindValue(':u_text', $u_text, PDO::PARAM_STR);
         $stmt->bindValue(':height', $height, PDO::PARAM_STR);
         $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
-        if ($image_uploaded) $stmt->bindValue(':pro_img', $pro_img, PDO::PARAM_STR);
+        if ($image_uploaded) $stmt->bindValue(':pro_img',$pro_img,PDO::PARAM_STR);
 
         if ($stmt->execute()) {
-            // セッション更新
-            $_SESSION['u_name'] = $u_name;
-            $_SESSION['u_name_id'] = $u_name_id;
-            $_SESSION['u_text'] = $u_text;
-            $_SESSION['height'] = $height;
-            if ($image_uploaded) $_SESSION['pro_img'] = $pro_img;
-
+            $_SESSION['u_name']=$u_name;
+            $_SESSION['u_name_id']=$u_name_id;
+            $_SESSION['u_text']=$u_text;
+            $_SESSION['height']=$height;
+            if ($image_uploaded) $_SESSION['pro_img']=$pro_img;
             header('Location: profile.php');
             exit();
         } else {
-            $error = "更新に失敗しました。";
+            $error="更新に失敗しました。";
         }
     }
 }
 
-// 表示用アイコン（NULL, 空文字, ファイル不存在なら default.png）
-$img_icon = $user['pro_img'] ?? '';  
-$img_path = "u_icon/" . $img_icon;
-
-// 実際のファイルが存在しなかったら default.png に変更
-if (empty($img_icon) || !file_exists(__DIR__ . "/u_icon/" . $img_icon)) {
-    $img_path = "u_icon/default.png";
+$img_path = $user['pro_img'] ?? 'u_img/default.png';
+if (!file_exists(__DIR__ . '/' . $img_path) || empty($user['pro_img'])) {
+    $img_path = 'u_img/default.png';
 }
 
-
-// 表示用
-$u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
-$u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
-$u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8');
-$height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES, 'UTF-8');
+$u_name = htmlspecialchars($user['u_name'], ENT_QUOTES);
+$u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES);
+$u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES);
+$height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
 ?>
 
 <!DOCTYPE html>
