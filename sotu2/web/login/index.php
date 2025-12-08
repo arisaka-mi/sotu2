@@ -6,7 +6,7 @@ if (isset($_SESSION['user_id'])) {
     $msg = 'ようこそ ' . htmlspecialchars($u_name_id, ENT_QUOTES, 'UTF-8') . 'さん';
     // ホーム画面に遷移
     $link1 = '
-        <form action="../home/timeline.php" method="post">
+        <form action="../home/timeline_public.php" method="post">
             <button type="submit">今すぐはじめる</button>
         </form>
     ';

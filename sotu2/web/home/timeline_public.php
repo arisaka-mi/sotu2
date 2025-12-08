@@ -81,6 +81,8 @@ function render_comments($comments, $level = 0) {
 
 <?php if (empty($posts)): ?>
     <p>投稿はまだありません。</p>
+    <p><a href="timeline_friends.php">友達の投稿</p>
+    <p><a href="../profile/profile.php">プロフィールに戻る</p>
 <?php else: ?>
     <?php foreach ($posts as $post): ?>
         <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">

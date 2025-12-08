@@ -2,13 +2,6 @@
 // ★ config.php を読み込む
 require_once __DIR__ . '/../login/config.php';
 
-// ログインチェック
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login/login.php");
-    exit;
-}
-
-
 $keyword = $_GET['keyword'] ?? '';
 $kw_like = '%' . $keyword . '%';
 
