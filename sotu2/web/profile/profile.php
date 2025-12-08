@@ -146,25 +146,37 @@ $follower_count = $stmt->fetchColumn();
 </style>
 </head>
 <body>
-
 <div class="profile-container">
-    <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>?<?= time() ?>" alt="プロフィール画像" class="profile-icon">
+    <!-- アイコン
+    <img src="<?= htmlspecialchars($img_icon, ENT_QUOTES) ?>" alt="プロフィール画像" class="profile-icon">
+     -->
+    <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" alt="プロフィール画像" class="profile-icon">
 
+    <!-- ユーザー名 -->
     <h1><?= $u_name ?></h1>
+    
+    <!-- ユーザーID -->
     <h2>@<?= $u_name_id ?></h2>
+
+    <!--自己紹介-->
     <p class="u_text"><?= $u_text ?></p>
 
+    <!--フォロー・フォロワー-->
     <div class="follow-block">
         <div class="follow-item">
             <span class="follow-number"><?= $follow_count ?></span>
             <span class="follow-label">フォロー</span>
         </div>
+
         <div class="follow-item">
             <span class="follow-number"><?= $follower_count ?></span>
             <span class="follow-label">フォロワー</span>
         </div>
     </div>
 
+
+
+    <!--フォローする・フォロー解除-->
     <?php if ($logged_in_user_id != $profile_user_id): ?>
         <?php if ($is_following): ?>
             <form action="unfollow.php" method="POST">
@@ -179,8 +191,10 @@ $follower_count = $stmt->fetchColumn();
         <?php endif; ?>
     <?php endif; ?>
 
+    
+    <!-- ボタン -->
     <a href="profile_setting.php" class="btn">プロフィール編集</a>
+    <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
 </div>
-
 </body>
 </html>

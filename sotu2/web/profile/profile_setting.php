@@ -231,11 +231,12 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
         <p>骨格: <?= $user['bt_id'] ?>（編集不可）</p>
         <p>パーソナルカラー: <?= $user['pc_id'] ?>（編集不可）</p>
 
+        <p><a href="../login/logout.php">ログアウト</a></p>
+
         <button type="submit" class="btn">更新する</button>
         <a href="profile.php" class="btn" style="background:#6c757d;">キャンセル</a>
     </form>
 
-    <p><a href="../login/logout.php">ログアウト</a></p>
 
 </div>
 </main>
