@@ -46,14 +46,28 @@ $u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
 $u_name_id = htmlspecialchars($user['u_name_id'], ENT_QUOTES, 'UTF-8');
 $u_text = htmlspecialchars($user['u_text'] ?? '', ENT_QUOTES, 'UTF-8');
 
-// フォロー数・フォロワー数
+// フォロー数
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM Follow WHERE follower_id = :id");
 $stmt->execute([':id' => $profile_user_id]);
 $follow_count = $stmt->fetchColumn();
 
+// フォロワー数
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM Follow WHERE followed_id = :id");
 $stmt->execute([':id' => $profile_user_id]);
 $follower_count = $stmt->fetchColumn();
+
+
+// 投稿取得（最新順）+ いいね数
+$stmt = $pdo->prepare("
+    SELECT 
+        p.*,
+        (SELECT COUNT(*) FROM PostLike pl WHERE pl.post_id = p.post_id) AS like_count
+    FROM Post p
+    WHERE p.user_id = :user_id
+    ORDER BY p.created_at DESC
+");
+$stmt->execute([':user_id' => $profile_user_id]);
+$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 
@@ -63,140 +77,113 @@ $follower_count = $stmt->fetchColumn();
 <meta charset="UTF-8">
 <title>プロフィール</title>
 <style>
-    body { 
-        font-family: sans-serif; 
-        margin: 0; 
-        padding: 0; 
-    }
-    .profile-container { 
-        max-width: 500px; 
-        margin: 50px auto; 
-        padding: 20px; 
-        background: #fff; 
-        border-radius: 10px; 
-        text-align: center;
-    }
+    body { font-family: sans-serif; margin: 0; padding: 0; }
+    .profile-container { max-width: 500px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 10px; text-align: center; }
+
     .profile-icon {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin: 0 auto 20px; /* ←横中央寄せ */
-        display: block;      /* ←これが必要 */
+        width: 120px; height: 120px;
+        border-radius: 50%; object-fit: cover;
+        margin: 0 auto 20px; display: block;
         border: 1px solid #ebebebff;
     }
 
-    h1 { 
-        margin: 0; 
-        font-size: 24px;
-    }
-    h2 { 
-        margin: 5px 0 20px 0; 
-        font-size: 18px; 
-        color: #555; 
-    }
-    p { 
-        margin-bottom: 20px; 
-        line-height: 1.5; 
-    }
-    .btn { 
-        display: inline-block; 
-        padding: 10px 20px; 
-        margin-right: 10px; 
-        background: #c6c6c6ff; 
-        color: #fff; 
-        text-decoration: none; 
-        border-radius: 5px; 
-        width: 140px;
-    }
-    .btn:hover { 
+    h1 { margin: 0; font-size: 24px; }
+    h2 { margin: 5px 0 20px; font-size: 18px; color: #555; }
+    p { margin-bottom: 20px; line-height: 1.5; }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-right: 10px;
         background: #c6c6c6ff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        width: 140px;
+        border: none;
+        outline: none;
+        cursor: pointer;
+    }
+    .btn:hover { background: #b5b5b5; }
+
+    .unfollow-btn {
+        background: #ff6b6b !important;
+        border: none !important;
+        outline: none !important;
+    }
+    .unfollow-btn:hover {
+        background: #e55b5b !important;
     }
 
-    /* フォロー・フォロワー表示枠 */
-    .follow-block {
-        display: flex;
-        justify-content: center;
-        gap: 40px;           /* フォローとフォロワーの間の距離 */
-        margin: 10px 0 20px;
-    }
-
-    /* 1つ分の縦並び */
-    .follow-item {
-        text-align: center;
-    }
-
-    /* 数字（大きめ） */
-    .follow-number {
-        font-size: 24px;
-        font-weight: bold;
-        color: #333;
-        display: block;
-        line-height: 1;
-    }
-
-    /* ラベル（フォロー / フォロワー） */
-    .follow-label {
-        font-size: 14px;
-        color: #555;
-        display: block;
-        margin-top: 4px;
-    }   
-
+    .follow-block { display: flex; justify-content: center; gap: 40px; margin: 10px 0 20px; }
+    .follow-item { text-align: center; }
+    .follow-number { font-size: 24px; font-weight: bold; color: #333; }
+    .follow-label { font-size: 14px; color: #555; margin-top: 4px; }
 </style>
 </head>
+
 <body>
 <div class="profile-container">
-    <!-- アイコン
-    <img src="<?= htmlspecialchars($img_icon, ENT_QUOTES) ?>" alt="プロフィール画像" class="profile-icon">
-     -->
-    <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" alt="プロフィール画像" class="profile-icon">
 
-    <!-- ユーザー名 -->
+    <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" class="profile-icon">
+
     <h1><?= $u_name ?></h1>
-    
-    <!-- ユーザーID -->
     <h2>@<?= $u_name_id ?></h2>
 
-    <!--自己紹介-->
-    <p class="u_text"><?= $u_text ?></p>
+    <p><?= $u_text ?></p>
 
-    <!--フォロー・フォロワー-->
     <div class="follow-block">
         <div class="follow-item">
             <span class="follow-number"><?= $follow_count ?></span>
             <span class="follow-label">フォロー</span>
         </div>
-
         <div class="follow-item">
             <span class="follow-number"><?= $follower_count ?></span>
             <span class="follow-label">フォロワー</span>
         </div>
     </div>
 
-
-
-    <!--フォローする・フォロー解除-->
+    <!-- フォローボタン -->
     <?php if ($logged_in_user_id != $profile_user_id): ?>
         <?php if ($is_following): ?>
             <form action="unfollow.php" method="POST">
                 <input type="hidden" name="followed_id" value="<?= $profile_user_id ?>">
-                <button class="btn" style="background:#ff6b6b;">フォロー解除</button>
+                <button class="btn unfollow-btn">フォロー解除</button>
             </form>
         <?php else: ?>
             <form action="follow.php" method="POST">
                 <input type="hidden" name="followed_id" value="<?= $profile_user_id ?>">
-                <button class="btn" style="background:#4caf50;">フォローする</button>
+                <button class="btn">フォローする</button>
             </form>
         <?php endif; ?>
     <?php endif; ?>
 
-    
+    <!-- 自分のプロフィールのときだけ表示 -->
     <?php if ($logged_in_user_id == $profile_user_id): ?>
-        <!-- 自分のプロフィールのときだけ表示 -->
         <a href="profile_setting.php" class="btn">プロフィール編集</a>
         <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
     <?php endif; ?>
+
+    <!-- 投稿一覧 -->
+    <h3>投稿一覧</h3>
+    <div class="posts-container">
+        <?php if (count($posts) > 0): ?>
+            <?php foreach ($posts as $post): ?>
+                <div class="post">
+                    <?php if (!empty($post['media_url'])): ?>
+                        <img src="<?= htmlspecialchars($post['media_url'], ENT_QUOTES) ?>" alt="投稿画像" class="post-img">
+                    <?php endif; ?>
+                    <p><?= nl2br(htmlspecialchars($post['content_text'], ENT_QUOTES)) ?></p>
+                    <small>
+                        投稿日: <?= htmlspecialchars($post['created_at']) ?>
+                        <span class="like-count"> <img src="img/like_2.png" alt="ハート" style="width:20px; "> <?= $post['like_count'] ?></span>
+                    </small>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p>まだ投稿はありません。</p>
+        <?php endif; ?>
+    </div>
 
 </div>
 </body>
