@@ -236,8 +236,6 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
         <button type="submit" class="btn">更新する</button>
         <a href="profile.php" class="btn" style="background:#6c757d;">キャンセル</a>
     </form>
-
-
 </div>
 </main>
 </body>

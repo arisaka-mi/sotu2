@@ -165,7 +165,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php endif; ?>
 
     <!-- 投稿一覧 -->
-    <h3>投稿一覧</h3>
     <div class="posts-container">
         <?php if (count($posts) > 0): ?>
             <?php foreach ($posts as $post): ?>
@@ -184,7 +183,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <p>まだ投稿はありません。</p>
         <?php endif; ?>
     </div>
-
 </div>
 </body>
 </html>

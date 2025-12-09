@@ -102,7 +102,6 @@ function render_comments($comments, $level = 0) {
 
 <h1>タイムライン</h1>
 <p>おすすめ</p>
-<a href="timeline_friends.php">友達の投稿</a>
 
 <?php if (empty($posts)): ?>
     <p>投稿はまだありません。</p>
