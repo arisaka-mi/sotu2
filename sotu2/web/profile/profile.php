@@ -192,9 +192,12 @@ $follower_count = $stmt->fetchColumn();
     <?php endif; ?>
 
     
-    <!-- ボタン -->
-    <a href="profile_setting.php" class="btn">プロフィール編集</a>
-    <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
+    <?php if ($logged_in_user_id == $profile_user_id): ?>
+        <!-- 自分のプロフィールのときだけ表示 -->
+        <a href="profile_setting.php" class="btn">プロフィール編集</a>
+        <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
+    <?php endif; ?>
+
 </div>
 </body>
 </html>
