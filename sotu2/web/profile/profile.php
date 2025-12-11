@@ -134,14 +134,19 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="follow-block">
         <div class="follow-item">
-            <span class="follow-number"><?= $follow_count ?></span>
-            <span class="follow-label">フォロー</span>
+            <a href="follow_list.php?user_id=<?= $profile_user_id ?>" style="text-decoration:none; color:inherit;">
+                <span class="follow-number"><?= $follow_count ?></span>
+                <span class="follow-label">フォロー</span>
+            </a>
         </div>
         <div class="follow-item">
-            <span class="follow-number"><?= $follower_count ?></span>
-            <span class="follow-label">フォロワー</span>
+            <a href="follower_list.php?user_id=<?= $profile_user_id ?>" style="text-decoration:none; color:inherit;">
+                <span class="follow-number"><?= $follower_count ?></span>
+                <span class="follow-label">フォロワー</span>
+            </a>
         </div>
     </div>
+
 
     <!-- フォローボタン -->
     <?php if ($logged_in_user_id != $profile_user_id): ?>

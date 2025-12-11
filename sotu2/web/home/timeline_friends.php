@@ -38,11 +38,35 @@ try {
         GROUP BY p.post_id
         ORDER BY p.created_at DESC
     ";
+    
 
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':uid', $user_id, PDO::PARAM_INT);
     $stmt->execute();
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+    //フォロー中ユーザー取得
+    $sql_following = "
+        SELECT u.user_id, u.u_name, u.u_name_id, u.pro_img
+        FROM Follow f
+        JOIN User u ON f.followed_id = u.user_id
+        WHERE f.follower_id = :uid
+    ";
+    $stmt = $pdo->prepare($sql_following);
+    $stmt->execute([':uid' => $user_id]);
+    $following_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //フォロワー取得
+    $sql_followers = "
+        SELECT u.user_id, u.u_name, u.u_name_id, u.pro_img
+        FROM Follow f
+        JOIN User u ON f.follower_id = u.user_id
+        WHERE f.followed_id = :uid
+    ";
+    $stmt = $pdo->prepare($sql_followers);
+    $stmt->execute([':uid' => $user_id]);
+    $follower_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // コメント取得
     $stmt2 = $pdo->query("SELECT * FROM Comment ORDER BY cmt_at ASC");
