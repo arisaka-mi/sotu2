@@ -1,25 +1,5 @@
 <?php
 session_start();
-require_once('../login/config.php'); // DB接続
-
-// ログインチェック
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login/login_form.php');
-    exit();
-}
-
-$user_id = $_SESSION['user_id'];
-
-// DBからユーザー情報取得
-$stmt = $pdo->prepare("SELECT * FROM User WHERE user_id = :user_id");
-$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
-$stmt->execute();
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$user) {
-    echo "ユーザー情報が見つかりません。";
-    exit();
-}
 
 // 初回スコア初期化
 if (!isset($_SESSION['score'])) {
@@ -37,6 +17,31 @@ if (isset($_POST['add'])) {
 $q = isset($_POST['q']) ? (int)$_POST['q'] : 1;
 $totalQuestions = 14;
 
+// ----------------------
+// 質問ごと画像のパス設定
+// ----------------------
+$questionImages = [
+    1=>"img/sin_sakotu.PNG",
+    2=>"img/sin_ninoude.PNG",
+    3=>"img/sin_sakotu.PNG",
+    4=>"img/sin_zensinn.PNG",
+    5=>"img/sin_kubi.PNG",
+    6=>"img/sin_senaka.PNG",
+    7=>"img/sin_sakotu.PNG",
+    8=>"img/sin_kenkoukotu.PNG",
+    9=>"img/sin_kahansin.PNG",
+    10=>"img/sin_kahansin.PNG",
+    11=>"img/sin_kahansin.PNG",
+    12=>"img/sin_kahansin.PNG",
+    13=>"img/sin_kahansin.PNG",
+    14=>"img/sin_kahansin.PNG"
+];
+
+// 画像パス取得（なければ sample_image.jpg）
+$currentImage = isset($questionImages[$q]) 
+    ? $questionImages[$q] 
+    : "sample_image.jpg";
+
 // 質問データ
 $questions = [
     1=>["text"=>"Q1. 鎖骨まわりの印象は？","choices"=>[
@@ -44,15 +49,15 @@ $questions = [
         "普通に見える"=>"upper_straight",
         "柔らかく目立たない"=>"upper_wave"
     ]],
-    2=>["text"=>"Q2. 肩の形は？","choices"=>[
-        "角ばって直線的"=>"upper_natural",
-        "標準的で丸すぎず広すぎない"=>"upper_straight",
-        "なで肩・丸い印象"=>"upper_wave"
-    ]],
-    3=>["text"=>"Q3. 二の腕の特徴は？","choices"=>[
+    2=>["text"=>"Q2. 二の腕の特徴は？","choices"=>[
         "細くても骨感あり"=>"upper_natural",
         "太るとしっかり太る"=>"upper_straight",
         "ふんわり丸く見える"=>"upper_wave"
+    ]],
+    3=>["text"=>"Q3. 肩の形は？","choices"=>[
+        "角ばって直線的"=>"upper_natural",
+        "標準的で丸すぎず広すぎない"=>"upper_straight",
+        "なで肩・丸い印象"=>"upper_wave"
     ]],
     4=>["text"=>"Q4. 胸・上半身の厚みは？","choices"=>[
         "メリハリあり"=>"upper_straight",
@@ -123,16 +128,95 @@ if ($q > $totalQuestions) {
 <meta charset="UTF-8">
 <title>骨格診断 質問</title>
 <style>
-body { margin:0; padding:0; font-family:sans-serif; background:#FFEB3B; display:flex; justify-content:center; }
-.container { display:flex; max-width:1000px; width:90%; margin:50px auto; background:#fff; border-radius:25px; overflow:hidden; min-height:600px; }
-.question-area { flex:3; padding:50px 40px 80px 40px; display:flex; flex-direction:column; gap:30px; }
-.q-number { font-weight:bold; font-size:16px; background:#FF9800; color:#fff; padding:6px 12px; border-radius:10px; width:max-content; }
-.q-text { font-size:22px; font-weight:bold; }
-.choice-form { margin-bottom:12px; }
-.choice-btn { width: 500px; padding:16px; font-size:16px; border:none; border-radius:15px; text-align:left; background:#f5f5f5; cursor:pointer; transition:0.2s; }
-.choice-btn:hover { background:#FFCC80; }
-.image-area { flex:2; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-.image-area img { width:100%; height:100%; object-fit:cover; border-radius:20px; display:block; }
+body { 
+    margin:0; 
+    padding:0; 
+    font-family:sans-serif; 
+    background:#FFEB3B; 
+    display:flex; 
+    justify-content:center; 
+}
+.container { 
+    display:flex; 
+    max-width:1000px; 
+    width:90%; 
+    margin:50px auto; 
+    background:#fff; 
+    border-radius:25px; 
+    overflow:hidden; 
+    min-height:600px; 
+}
+.question-area { 
+    flex:3; 
+    padding:50px 40px 80px 40px; 
+    display:flex; 
+    flex-direction:column; 
+    gap:30px; 
+}
+.q-number { 
+    font-weight:bold; 
+    font-size:16px; 
+    background:#FF9800; 
+    color:#fff; 
+    padding:6px 12px; 
+    border-radius:10px; 
+    width:max-content; 
+}
+.q-text { 
+    font-size:22px; 
+    font-weight:bold; 
+}
+.choice-form { 
+    margin-bottom:12px; 
+}
+.choice-btn { 
+    width: 500px; 
+    padding:16px; 
+    font-size:16px; 
+    border:none; 
+    border-radius:15px; 
+    text-align:left; 
+    background:#f5f5f5; 
+    cursor:pointer; 
+    transition:0.2s; 
+}
+.choice-btn:hover { 
+    background:#FFCC80; 
+}
+
+.image-area { 
+    flex:3; 
+    display:flex; 
+    padding:20px; /* ← 左寄せした上で少し余白 */
+}
+
+.image-area img { 
+    width:100%;     /* ← 画像を小さく（お好みで変更OK） */
+    height:auto; 
+    object-fit:contain; 
+    border-radius:20px; 
+    display:block; 
+}
+
+.back-btn {
+    margin-top: 20px;
+    width: 250px;
+    padding: 14px;
+    font-size: 16px;
+    border: none;
+    border-radius: 15px;
+    background: #87CEFA; /* 空色 */
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.back-btn:hover {
+    background: #6bb8e6; /* 少し濃い空色 */
+}
+
+
+
 @media(max-width:768px){
     .container { flex-direction:column; min-height:auto; }
     .question-area, .image-area { flex:unset; width:100%; }
@@ -151,10 +235,22 @@ body { margin:0; padding:0; font-family:sans-serif; background:#FFEB3B; display:
             <input type="hidden" name="add" value="<?= $addScore ?>">
             <button type="submit" class="choice-btn"><?= $label ?></button>
         </form>
-        <?php endforeach; ?>
+        <?php endforeach; ?>  
+            <!-- ▼ 前の質問に戻るボタン -->
+        <?php if ($q > 1): ?>
+        <form method="post">
+            <input type="hidden" name="q" value="<?= $q-1 ?>">
+            <button type="submit" class="back-btn">← 前の質問に戻る</button>
+        </form>
+        <?php endif; ?> 
+        <?php if ($q == 1): ?>
+        <a href = "diagnosis_form.php">
+            <button type="submit" class="back-btn" >← 診断選択に戻る</button>
+        </a>
+        <?php endif; ?>  
     </div>
     <div class="image-area">
-        <img src="sample_image.jpg" alt="質問イメージ">
+        <img src="<?= $currentImage ?>" alt="質問イメージ">
     </div>
 </div>
 </body>

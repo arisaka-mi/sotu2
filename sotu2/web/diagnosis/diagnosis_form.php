@@ -1,25 +1,25 @@
 <?php
 session_start();
-require_once('../login/config.php'); // DB接続
+// require_once('../login/config.php'); // DB接続
 
 // ログインチェック
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login/login_form.php');
-    exit();
-}
+// if (!isset($_SESSION['user_id'])) {
+//     header('Location: ../login/login_form.php');
+//     exit();
+// }
 
-$user_id = $_SESSION['user_id'];
+// $user_id = $_SESSION['user_id'];
 
 // DBからユーザー情報取得
-$stmt = $pdo->prepare("SELECT * FROM User WHERE user_id = :user_id");
-$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
-$stmt->execute();
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+// $stmt = $pdo->prepare("SELECT * FROM User WHERE user_id = :user_id");
+// $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+// $stmt->execute();
+// $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user) {
-    echo "ユーザー情報が見つかりません。";
-    exit();
-}
+// if (!$user) {
+//     echo "ユーザー情報が見つかりません。";
+//     exit();
+// }
 
 // エラー初期化
 $error = "";
@@ -30,7 +30,7 @@ $error = "";
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>診断メニュー</title>
+<title>診断メニュー（中央配置＋丸角安定版）</title>
 <style>
 :root{
   --edge: clamp(40px, 10vh, 90px);     /* 上/右/下のオレンジ余白 */
@@ -162,8 +162,10 @@ p.lead {
 
       <a href="body_type.php" class="menu-btn bone">骨格診断</a>
       <a href="parsonal_color.php" class="menu-btn color">パーソナルカラー診断</a>
-      <a href="../profile/profile.php">もどる</a>
+      <a href="./profile/profile_setting.php">もどる</a>
   </div>
+
 </div>
+
 </body>
 </html>

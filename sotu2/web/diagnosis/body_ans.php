@@ -98,7 +98,8 @@ body {
 h1 { margin-bottom: 25px; }
 .result { font-size: 1.4em; font-weight: bold; margin: 18px 0; }
 .description { font-size: 1.15em; line-height: 1.7; margin-top: 25px; }
-a.button {
+
+a.button1 {
     display: inline-block;
     margin-top: 35px;
     padding: 14px 35px;
@@ -108,10 +109,27 @@ a.button {
     text-decoration: none;
     border-radius: 18px;
     transition: 0.2s;
+    width: 175px;
 }
-a.button:hover {
+a.button1:hover {
     background: #FF1493;
 }
+
+a.button2 {
+    display: inline-block;
+    margin-top: 35px;
+    padding: 14px 35px;
+    font-size: 16px;
+    background: #ff6973ff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 18px;
+    transition: 0.2s;
+}
+a.button2:hover {
+    background: #ff1427ff;
+}
+
 @media(max-width:768px){
     .result-container { padding: 40px 20px; width: 95%; }
 }
@@ -119,7 +137,7 @@ a.button:hover {
 </head>
 <body>
 <div class="result-container">
-    <h1>骨格診断（上半身 × 下半身 2軸）</h1>
+    <h1>骨格診断（上半身 × 下半身）</h1>
     <p class="result">◆ 上半身：<?= $typeName[$upperType] ?></p>
     <p class="result">◆ 下半身：<?= $typeName[$lowerType] ?></p>
 
@@ -127,7 +145,14 @@ a.button:hover {
 
     <p class="description"><?= nl2br($description) ?></p>
 
-    <a href="body_type.php" class="button">もう一度診断する</a>
+    <a href="body_type.php" class="button1">もう一度診断する</a>
+
+    <form action="save_body_type.php" method="post">
+        <input type="hidden" name="upper" value="<?= $upperType ?>">
+        <input type="hidden" name="lower" value="<?= $lowerType ?>">
+    <a href="save_body_type" class="button2">プロフィールに保存する</a>
+    </form>
+
 </div>
 </body>
 </html>
