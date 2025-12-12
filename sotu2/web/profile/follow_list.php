@@ -23,25 +23,32 @@ $follow_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>フォロー一覧</title>
+    <meta charset="UTF-8">
+    <title>フォロー一覧</title>
+    <style>
+        /*ここにCSS */
+    </style>
 </head>
+<header>
+    <?php include '../navigation/nav.php'; ?>
+</header>
 <body>
-<h1>フォロー一覧</h1>
+<main>
+    <h1>フォロー一覧</h1>
 
-<?php if (count($follow_list) > 0): ?>
-    <?php foreach ($follow_list as $row): ?>
-        <div>
-            <img src="<?= htmlspecialchars($row['pro_img'] ?? 'u_img/default.png') ?>" width="50" style="border-radius:50%;">
-            <a href="profile.php?user_id=<?= $row['user_id'] ?>">
-                <?= htmlspecialchars($row['u_name']) ?> (@<?= htmlspecialchars($row['u_name_id']) ?>)
-            </a>
-        </div>
-        <hr>
-    <?php endforeach; ?>
-<?php else: ?>
-    <p>フォローしているユーザーはいません。</p>
-<?php endif; ?>
-
+    <?php if (count($follow_list) > 0): ?>
+        <?php foreach ($follow_list as $row): ?>
+            <div>
+                <img src="<?= htmlspecialchars($row['pro_img'] ?? 'u_img/default.png') ?>" width="50" style="border-radius:50%;">
+                <a href="profile.php?user_id=<?= $row['user_id'] ?>">
+                    <?= htmlspecialchars($row['u_name']) ?> (@<?= htmlspecialchars($row['u_name_id']) ?>)
+                </a>
+            </div>
+            <hr>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <p>フォローしているユーザーはいません。</p>
+    <?php endif; ?>
+</main>
 </body>
 </html>

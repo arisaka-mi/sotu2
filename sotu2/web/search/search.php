@@ -39,10 +39,10 @@ $recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
         }
     </style>
 </head>
+<header>
+    <?php include '../navigation/nav.php'; ?>
+</header>
 <body>
-    <header>
-        <h1>投稿検索</h1>
-    </header>
     <main>
         <!-- 検索フォーム -->
         <form method="get" action="search_control.php">

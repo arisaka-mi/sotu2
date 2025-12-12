@@ -8,7 +8,9 @@
     <header>
         <!-- グローバルナビ実装予定 -->
     </header>
-
+    <header>
+        <?php include '../navigation/nav.php'; ?>
+    </header>
     <main>
         <h1>新規投稿</h1>
 

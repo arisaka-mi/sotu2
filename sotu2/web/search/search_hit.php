@@ -27,31 +27,32 @@ unset($_SESSION['keyword']);
         }
     </style>
 </head>
+<header>
+    <?php include '../navigation/nav.php'; ?>
+</header>
 <body>
-    <header>
-    </header>
-    <main>
-        <h2>検索ワード：<?= htmlspecialchars($keyword) ?></h2>
+<main>
+    <h2>検索ワード：<?= htmlspecialchars($keyword) ?></h2>
 
-        <?php if (empty($posts)): ?>
-            <p>見つかりませんでした。</p>
-        <?php else: ?>
-            <?php foreach ($posts as $post): ?>
-                <div class="post">
-                    <?php
-                        // DBに保存されている media_url を search/uploads に置換
-                        $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url'] ?? '');
-                    ?>
-                    <?php if (!empty($post['media_url']) && file_exists($image_url)): ?>
-                        <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
-                    <?php endif; ?>
+    <?php if (empty($posts)): ?>
+        <p>見つかりませんでした。</p>
+    <?php else: ?>
+        <?php foreach ($posts as $post): ?>
+            <div class="post">
+                <?php
+                    // DBに保存されている media_url を search/uploads に置換
+                    $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url'] ?? '');
+                ?>
+                <?php if (!empty($post['media_url']) && file_exists($image_url)): ?>
+                    <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
+                <?php endif; ?>
 
-                    <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+                <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 
-        <a href="search.php">← 検索に戻る</a>
-    </main>
+    <a href="search.php">← 検索に戻る</a>
+</main>
 </body>
 </html>

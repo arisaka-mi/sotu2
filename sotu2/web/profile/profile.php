@@ -68,126 +68,168 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([':user_id' => $profile_user_id]);
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+//コメントのカウント
+$stmt = $pdo->prepare("
+    SELECT 
+        p.*,
+        (SELECT COUNT(*) FROM PostLike pl WHERE pl.post_id = p.post_id) AS like_count,
+        (SELECT COUNT(*) FROM Comment c WHERE c.post_id = p.post_id) AS comment_count
+    FROM Post p
+    WHERE p.user_id = :user_id
+    ORDER BY p.created_at DESC
+");
+$stmt->execute([':user_id' => $profile_user_id]);
+$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>プロフィール</title>
-<style>
-    body { font-family: sans-serif; margin: 0; padding: 0; }
-    .profile-container { max-width: 500px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 10px; text-align: center; }
+    <meta charset="UTF-8">
+    <title>プロフィール</title>
+    <style>
+        body { 
+            font-family: sans-serif; margin: 0; padding: 0; 
+        }
 
-    .profile-icon {
-        width: 120px; height: 120px;
-        border-radius: 50%; object-fit: cover;
-        margin: 0 auto 20px; display: block;
-        border: 1px solid #ebebebff;
-    }
+        .profile-container { 
+            max-width: 500px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 10px; text-align: center; 
+        }
 
-    h1 { margin: 0; font-size: 24px; }
-    h2 { margin: 5px 0 20px; font-size: 18px; color: #555; }
-    p { margin-bottom: 20px; line-height: 1.5; }
+        .profile-icon {
+            width: 120px; height: 120px;
+            border-radius: 50%; object-fit: cover;
+            margin: 0 auto 20px; display: block;
+            border: 1px solid #ebebebff;
+        }
 
-    .btn {
-        display: inline-block;
-        padding: 10px 20px;
-        margin-right: 10px;
-        background: #c6c6c6ff;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 5px;
-        width: 140px;
-        border: none;
-        outline: none;
-        cursor: pointer;
-    }
-    .btn:hover { background: #b5b5b5; }
+        h1 { margin: 0; font-size: 24px; }
+        h2 { margin: 5px 0 20px; font-size: 18px; color: #555; }
+        p { margin-bottom: 20px; line-height: 1.5; }
 
-    .unfollow-btn {
-        background: #ff6b6b !important;
-        border: none !important;
-        outline: none !important;
-    }
-    .unfollow-btn:hover {
-        background: #e55b5b !important;
-    }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-right: 10px;
+            background: #c6c6c6ff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            width: 140px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+        }
+        .btn:hover { background: #b5b5b5; }
 
-    .follow-block { display: flex; justify-content: center; gap: 40px; margin: 10px 0 20px; }
-    .follow-item { text-align: center; }
-    .follow-number { font-size: 24px; font-weight: bold; color: #333; }
-    .follow-label { font-size: 14px; color: #555; margin-top: 4px; }
-</style>
+        .unfollow-btn {
+            background: #ff6b6b !important;
+            border: none !important;
+            outline: none !important;
+        }
+        .unfollow-btn:hover {
+            background: #e55b5b !important;
+        }
+
+        .follow-block { display: flex; justify-content: center; gap: 40px; margin: 10px 0 20px; }
+        .follow-item { text-align: center; }
+        .follow-number { font-size: 24px; font-weight: bold; color: #333; }
+        .follow-label { font-size: 14px; color: #555; margin-top: 4px; }
+
+        /* 既存のスタイルの下に追加 */
+        .post-img {
+            max-width: 100%;     /* 親コンテナの幅を超えない */
+            height: auto;        /* アスペクト比を維持 */
+            border-radius: 10px; /* 角を丸くしたい場合 */
+            margin-bottom: 10px; /* 投稿との間隔 */
+        }
+
+        .post {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 15px;
+            margin-top: 45px; 
+            border-radius: 10px;
+            background-color: #fafafa;
+        }
+
+
+    </style>
 </head>
-
+<header>
+    <?php include '../navigation/nav.php'; ?>
+</header>
 <body>
-<div class="profile-container">
+<main>
+    <div class="profile-container">
 
-    <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" class="profile-icon">
+        <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" class="profile-icon">
 
-    <h1><?= $u_name ?></h1>
-    <h2>@<?= $u_name_id ?></h2>
+        <h1><?= $u_name ?></h1>
+        <h2>@<?= $u_name_id ?></h2>
 
-    <p><?= $u_text ?></p>
+        <p><?= $u_text ?></p>
 
-    <div class="follow-block">
-        <div class="follow-item">
-            <a href="follow_list.php?user_id=<?= $profile_user_id ?>" style="text-decoration:none; color:inherit;">
-                <span class="follow-number"><?= $follow_count ?></span>
-                <span class="follow-label">フォロー</span>
-            </a>
+        <div class="follow-block">
+            <div class="follow-item">
+                <a href="follow_list.php?user_id=<?= $profile_user_id ?>" style="text-decoration:none; color:inherit;">
+                    <span class="follow-number"><?= $follow_count ?></span>
+                    <span class="follow-label">フォロー</span>
+                </a>
+            </div>
+            <div class="follow-item">
+                <a href="follower_list.php?user_id=<?= $profile_user_id ?>" style="text-decoration:none; color:inherit;">
+                    <span class="follow-number"><?= $follower_count ?></span>
+                    <span class="follow-label">フォロワー</span>
+                </a>
+            </div>
         </div>
-        <div class="follow-item">
-            <a href="follower_list.php?user_id=<?= $profile_user_id ?>" style="text-decoration:none; color:inherit;">
-                <span class="follow-number"><?= $follower_count ?></span>
-                <span class="follow-label">フォロワー</span>
-            </a>
+
+
+        <!-- フォローボタン -->
+        <?php if ($logged_in_user_id != $profile_user_id): ?>
+            <?php if ($is_following): ?>
+                <form action="unfollow.php" method="POST">
+                    <input type="hidden" name="followed_id" value="<?= $profile_user_id ?>">
+                    <button class="btn unfollow-btn">フォロー解除</button>
+                </form>
+            <?php else: ?>
+                <form action="follow.php" method="POST">
+                    <input type="hidden" name="followed_id" value="<?= $profile_user_id ?>">
+                    <button class="btn">フォローする</button>
+                </form>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <!-- 自分のプロフィールのときだけ表示 -->
+        <?php if ($logged_in_user_id == $profile_user_id): ?>
+            <a href="profile_setting.php" class="btn">プロフィール編集</a>
+            <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
+        <?php endif; ?>
+
+        <!-- 投稿一覧 -->
+        <div class="posts-container">
+            <?php if (count($posts) > 0): ?>
+                <?php foreach ($posts as $post): ?>
+                    <div class="post">
+                        <?php if (!empty($post['media_url'])): ?>
+                            <img src="<?= htmlspecialchars($post['media_url'], ENT_QUOTES) ?>" alt="投稿画像" class="post-img">
+                        <?php endif; ?>
+                        <p><?= nl2br(htmlspecialchars($post['content_text'], ENT_QUOTES)) ?></p>
+                        <small>
+                            投稿日: <?= htmlspecialchars($post['created_at']) ?>
+                            <span class="like-count"> <img src="img/like_2.png" alt="ハート" style="width:20px; "> <?= $post['like_count'] ?></span>
+                            <span class="comment-count"> <img src="img/comment.png" alt="コメント" style="width:23px; "> <?= $post['comment_count'] ?></span>
+                        </small>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>まだ投稿はありません。</p>
+            <?php endif; ?>
         </div>
     </div>
-
-
-    <!-- フォローボタン -->
-    <?php if ($logged_in_user_id != $profile_user_id): ?>
-        <?php if ($is_following): ?>
-            <form action="unfollow.php" method="POST">
-                <input type="hidden" name="followed_id" value="<?= $profile_user_id ?>">
-                <button class="btn unfollow-btn">フォロー解除</button>
-            </form>
-        <?php else: ?>
-            <form action="follow.php" method="POST">
-                <input type="hidden" name="followed_id" value="<?= $profile_user_id ?>">
-                <button class="btn">フォローする</button>
-            </form>
-        <?php endif; ?>
-    <?php endif; ?>
-
-    <!-- 自分のプロフィールのときだけ表示 -->
-    <?php if ($logged_in_user_id == $profile_user_id): ?>
-        <a href="profile_setting.php" class="btn">プロフィール編集</a>
-        <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
-    <?php endif; ?>
-
-    <!-- 投稿一覧 -->
-    <div class="posts-container">
-        <?php if (count($posts) > 0): ?>
-            <?php foreach ($posts as $post): ?>
-                <div class="post">
-                    <?php if (!empty($post['media_url'])): ?>
-                        <img src="<?= htmlspecialchars($post['media_url'], ENT_QUOTES) ?>" alt="投稿画像" class="post-img">
-                    <?php endif; ?>
-                    <p><?= nl2br(htmlspecialchars($post['content_text'], ENT_QUOTES)) ?></p>
-                    <small>
-                        投稿日: <?= htmlspecialchars($post['created_at']) ?>
-                        <span class="like-count"> <img src="img/like_2.png" alt="ハート" style="width:20px; "> <?= $post['like_count'] ?></span>
-                    </small>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p>まだ投稿はありません。</p>
-        <?php endif; ?>
-    </div>
-</div>
+</main>
 </body>
 </html>

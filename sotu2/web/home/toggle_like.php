@@ -40,7 +40,7 @@ $stmt = $pdo->prepare("SELECT COUNT(*) AS cnt FROM PostLike WHERE post_id = ?");
 $stmt->execute([$post_id]);
 $like_count = $stmt->fetch()['cnt'];
 
-echo json_encode([
-    'status' => $status,
-    'like_count' => $like_count
-]);
+// リダイレクトして元ページに戻す
+header("Location: " . $_SERVER['HTTP_REFERER']);
+exit;
+
