@@ -19,6 +19,33 @@ if ($add) {
     $_SESSION['pc_score'][$add]++;
 }
 
+// ----------------------
+// 質問ごとの画像＋サイズ設定
+// ----------------------
+$questionImages = [
+    1 => ["src"=>"img/sin_tekubi.png", "w"=>"80%", "h"=>"auto", "fit"=>"contain"],
+    2 => ["src"=>"img/sin_kuti.png", "w"=>"80%", "h"=>"auto", "fit"=>"contain"],
+    3 => ["src"=>"img/sin_tuya.jpg", "w"=>"auto", "h"=>"auto", "fit"=>"cover"],
+    4 => ["src"=>"img/color_chart_vein.png", "w"=>"100%", "h"=>"100%", "fit"=>"contain"],
+    5 => ["src"=>"img/sin_hiyake.png", "w"=>"90%", "h"=>"auto", "fit"=>"contain"],
+    6 => ["src"=>"img/sin_akuse.png", "w"=>"80%", "h"=>"auto", "fit"=>"contain"],
+    7 => ["src"=>"img/color_chart_eye.png", "w"=>"100%", "h"=>"100%", "fit"=>"contain"],
+    8 => ["src"=>"img/sin_me.png", "w"=>"75%", "h"=>"auto", "fit"=>"contain"],
+    9 => ["src"=>"img/color_chart_naturalhair.png", "w"=>"100%", "h"=>"100%", "fit"=>"contain"],
+    10 => ["src"=>"img/color_chart_clothes.png", "w"=>"100%", "h"=>"100%", "fit"=>"contain"],
+    11 => ["src"=>"img/color_chart_rip.png", "w"=>"auto", "h"=>"auto", "fit"=>"contain"],
+    12 => ["src"=>"img/sin_tuya.jpg", "w"=>"auto", "h"=>"auto", "fit"=>"cover"],
+    13 => ["src"=>"img/color_chart_hair.png", "w"=>"100%", "h"=>"100%", "fit"=>"contain"],
+    14 => ["src"=>"img/sin_akuse.png", "w"=>"80%", "h"=>"auto", "fit"=>"contain"],
+    15 => ["src"=>"img/sin_kuti.png", "w"=>"70%", "h"=>"auto", "fit"=>"contain"],
+    16 => ["src"=>"img/color_chart_meido.png", "w"=>"100%", "h"=>"100%", "fit"=>"contain"],
+];
+
+// 現在の質問の画像（なければデフォルト）
+$currentImage = isset($questionImages[$q])
+    ? $questionImages[$q]
+    : ["src"=>"pc_sample_image.jpg", "w"=>"100%", "h"=>"100%", "fit"=>"contain"];
+
 // 質問データ（16問）
 $questions = [
     ["q"=>"あなたの肌の第一印象に近いのは？（手の甲・腕の内側で確認）","a"=>[
@@ -198,17 +225,33 @@ body {
     justify-content:center; 
     overflow:hidden; 
 }
-.image-area img { 
-    width:100%; 
-    height:100%; 
-    object-fit:cover; 
-    border-radius:20px; 
-    display:block; 
+.image-area img {
+    max-width:100%;
+    max-height:100%;
+    border-radius:20px;
+    display:block;
 }
+.back-btn {
+    margin-top: 20px;
+    width: 250px;
+    padding: 14px;
+    font-size: 16px;
+    border: none;
+    border-radius: 15px;
+    background: #87CEFA; /* 空色 */
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.back-btn:hover {
+    background: #6bb8e6; /* 少し濃い空色 */
+}
+
 @media(max-width:768px){
     .container { flex-direction:column; min-height:auto; }
     .question-area, .image-area { flex:unset; width:100%; }
-    .image-area { margin-top:20px; height:250px; }
+    .image-area { margin-top:10px; margin-bottom:30px; height:250px; }
 }
 </style>
 </head>
@@ -224,9 +267,24 @@ body {
             <button type="submit" class="choice-btn"><?= $label ?></button>
         </form>
         <?php endforeach; ?>
+            <!-- ▼ 前の質問に戻るボタン -->
+        <?php if ($q > 1): ?>
+        <form method="post">
+            <input type="hidden" name="q" value="<?= $q-1 ?>">
+            <button type="submit" class="back-btn">← 前の質問に戻る</button>
+        </form>
+        <?php endif; ?> 
+        <?php if ($q == 1): ?>
+        <a href = "diagnosis_form.php">
+            <button type="submit" class="back-btn" >← 診断選択に戻る</button>
+        </a>
+        <?php endif; ?>  
     </div>
     <div class="image-area">
-        <img src="pc_sample_image.jpg" alt="質問イメージ">
+        <img src="<?= $currentImage['src'] ?>" alt="質問イメージ" 
+        style="width: <?= $currentImage['w'] ?>;
+            height: <?= $currentImage['h'] ?>;
+            object-fit: <?= $currentImage['fit'] ?>;">
     </div>
 </div>
 </body>
