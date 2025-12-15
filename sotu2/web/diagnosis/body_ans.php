@@ -115,7 +115,7 @@ a.button1:hover {
     background: #FF1493;
 }
 
-a.button2 {
+.button2 {
     display: inline-block;
     margin-top: 35px;
     padding: 14px 35px;
@@ -123,10 +123,12 @@ a.button2 {
     background: #ff6973ff;
     color: #fff;
     text-decoration: none;
+    border: none;
+    cursor: pointer;
     border-radius: 18px;
     transition: 0.2s;
 }
-a.button2:hover {
+.button2:hover {
     background: #ff1427ff;
 }
 
@@ -147,11 +149,15 @@ a.button2:hover {
 
     <a href="body_type.php" class="button1">もう一度診断する</a>
 
+
     <form action="save_body_type.php" method="post">
         <input type="hidden" name="upper" value="<?= $upperType ?>">
         <input type="hidden" name="lower" value="<?= $lowerType ?>">
-    <a href="save_body_type" class="button2">プロフィールに保存する</a>
+        <button type="submit" class="button2">
+            プロフィールに保存する
+        </button>
     </form>
+
 
 </div>
 </body>
