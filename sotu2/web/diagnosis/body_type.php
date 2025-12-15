@@ -22,19 +22,19 @@ $totalQuestions = 14;
 // ----------------------
 $questionImages = [
     1=>"img/sin_sakotu.PNG",
-    2=>"img/sin_ninoude.PNG",
+    2=>"img/sin_nino.PNG",
     3=>"img/sin_sakotu.PNG",
-    4=>"img/sin_zensinn.PNG",
+    4=>"img/sin_zyouyoko.PNG",
     5=>"img/sin_kubi.PNG",
-    6=>"img/sin_senaka.PNG",
-    7=>"img/sin_sakotu.PNG",
-    8=>"img/sin_kenkoukotu.PNG",
-    9=>"img/sin_kahansin.PNG",
-    10=>"img/sin_kahansin.PNG",
-    11=>"img/sin_kahansin.PNG",
-    12=>"img/sin_kahansin.PNG",
+    6=>"img/sin_hiza.PNG",
+    7=>"img/sin_senaka.PNG",
+    8=>"img/sin_sakotu.PNG",
+    9=>"img/sin_zyouhann.PNG",
+    10=>"img/sin_osiri.PNG",
+    11=>"img/sin_momo.PNG",
+    12=>"img/sin_hiza.PNG",
     13=>"img/sin_kahansin.PNG",
-    14=>"img/sin_kahansin.PNG"
+    14=>"img/sin_hiza.PNG"
 ];
 
 // 画像パス取得（なければ sample_image.jpg）
@@ -69,51 +69,51 @@ $questions = [
         "普通"=>"upper_straight",
         "短めでふんわり"=>"upper_wave"
     ]],
-    6=>["text"=>"Q6. 背中・肩甲骨の印象は？","choices"=>[
+    6=>["text"=>"Q6. 膝の印象は？","choices"=>[
+        "骨ばっている"=>"lower_natural",
+        "普通"=>"lower_straight",
+        "丸く太め"=>"lower_wave"
+    ]],
+    7=>["text"=>"Q7. 背中・肩甲骨の印象は？","choices"=>[
         "骨が浮きやすい"=>"upper_natural",
         "目立たない"=>"upper_straight",
         "柔らかくふっくら"=>"upper_wave"
     ]],
-    7=>["text"=>"Q7. 肩幅の印象は？","choices"=>[
+    8=>["text"=>"Q8. 肩幅の印象は？","choices"=>[
         "広め・直線的"=>"upper_natural",
         "普通"=>"upper_straight",
         "狭め"=>"upper_wave"
     ]],
-    8=>["text"=>"Q8. 上半身の太り方は？","choices"=>[
+    9=>["text"=>"Q9. 上半身の太り方は？","choices"=>[
         "胸・肩・腕が先に増える"=>"upper_straight",
         "全体的に均等"=>"upper_natural",
         "上半身はあまり太らず柔らかく見える"=>"upper_wave"
     ]],
-    9=>["text"=>"Q9. お尻の形は？","choices"=>[
+    10=>["text"=>"Q10. お尻の形は？","choices"=>[
         "立体的でメリハリ"=>"lower_natural",
         "丸くて下側が広がる"=>"lower_wave",
         "上向きでハリあり"=>"lower_straight"
     ]],
-    10=>["text"=>"Q10. 太ももの太り方は？","choices"=>[
+    11=>["text"=>"Q11. 太ももの太り方は？","choices"=>[
         "筋肉がつきやすく張りやすい"=>"lower_natural",
         "外側に張りやすい"=>"lower_wave",
         "全体的に太くなる"=>"lower_straight"
-    ]],
-    11=>["text"=>"Q11. 膝の印象は？","choices"=>[
-        "骨ばっている"=>"lower_natural",
-        "普通"=>"lower_straight",
-        "丸く太め"=>"lower_wave"
     ]],
     12=>["text"=>"Q12. ふくらはぎの特徴は？","choices"=>[
         "筋肉つきやすく張りやすい"=>"lower_natural",
         "平均的"=>"lower_straight",
         "柔らかく丸く太りやすい"=>"lower_wave"
     ]],
-    13=>["text"=>"Q13. 脚のラインは？","choices"=>[
+    13=>["text"=>"Q13. 下半身の太り方は？","choices"=>[
+        "均等につきやすい"=>"lower_natural",
+        "下半身から目立つ"=>"lower_wave",
+        "下半身はあまり太らず上半身が先に増える"=>"lower_straight"
+    ]],
+    14=>["text"=>"Q14. 脚のラインは？","choices"=>[
         "直線的でスッと細い"=>"lower_natural",
         "標準的"=>"lower_straight",
         "O脚ぎみ・外側張り強め"=>"lower_wave"
     ]],
-    14=>["text"=>"Q14. 下半身の太り方は？","choices"=>[
-        "均等につきやすい"=>"lower_natural",
-        "下半身から目立つ"=>"lower_wave",
-        "下半身はあまり太らず上半身が先に増える"=>"lower_straight"
-    ]]
 ];
 
 if ($q > $totalQuestions) {
