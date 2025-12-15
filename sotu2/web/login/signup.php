@@ -114,6 +114,7 @@
                 <button type="submit">登録する</button>
             </form>
             <p>すでに登録済みの方は<a href="login_from.php">こちら</a></p>
+            
         </main>
     </body>
 </html>
