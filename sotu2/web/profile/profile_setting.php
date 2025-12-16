@@ -10,7 +10,16 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // ユーザー情報取得
-$stmt = $pdo->prepare("SELECT * FROM User WHERE user_id = :user_id");
+$stmt = $pdo->prepare("
+    SELECT 
+        u.*,
+        bt.bt_name,
+        pc.pc_name
+    FROM user u
+    LEFT JOIN body_type bt ON u.bt_id = bt.bt_id
+    LEFT JOIN parsonal_color pc ON u.pc_id = pc.pc_id
+    WHERE u.user_id = :user_id
+");
 $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->execute();
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -227,10 +236,8 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
                 <label for="height">身長</label>
                 <input type="text" name="height" id="height" value="<?= $height ?>" required>
             </div>
-
-            <p>骨格: <?= $user['bt_id'] ?>（編集不可）</p>
-            <p>パーソナルカラー: <?= $user['pc_id'] ?>（編集不可）</p>
-
+            <p>骨格: <?= htmlspecialchars($user['bt_name'] ?? '未設定', ENT_QUOTES) ?>（編集不可）</p>
+            <p>パーソナルカラー: <?= htmlspecialchars($user['pc_name'] ?? '未設定', ENT_QUOTES) ?>（編集不可）</p>
             <p><a href="../login/logout.php">ログアウト</a></p>
 
             <button type="submit" class="btn">更新する</button>
