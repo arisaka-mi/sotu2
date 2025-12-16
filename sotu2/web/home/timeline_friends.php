@@ -174,10 +174,10 @@ function render_comments($comments, $level = 0) {
         }
     </style>
 </head>
+<body>
 <header>
     <?php include '../navigation/nav.php'; ?>
 </header>
-<body>
 <main>
     <h1>タイムライン</h1>
 

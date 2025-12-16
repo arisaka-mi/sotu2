@@ -91,23 +91,41 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>プロフィール</title>
     <style>
         body { 
-            font-family: sans-serif; margin: 0; padding: 0; 
+            font-family: sans-serif; 
+            margin: 0; 
+            padding: 0; 
         }
 
         .profile-container { 
-            max-width: 500px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 10px; text-align: center; 
+            max-width: 500px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background: #fff; 
+            border-radius: 10px; 
+            text-align: center; 
         }
 
         .profile-icon {
-            width: 120px; height: 120px;
-            border-radius: 50%; object-fit: cover;
-            margin: 0 auto 20px; display: block;
+            width: 120px; 
+            height: 120px;
+            border-radius: 50%; 
+            object-fit: cover;
+            margin: 0 auto 20px; 
+            display: block;
             border: 1px solid #ebebebff;
         }
 
-        h1 { margin: 0; font-size: 24px; }
-        h2 { margin: 5px 0 20px; font-size: 18px; color: #555; }
-        p { margin-bottom: 20px; line-height: 1.5; }
+        h1 { 
+            margin: 0; 
+            font-size: 24px; 
+        }
+        h2 { margin: 5px 0 20px; 
+            font-size: 18px; 
+            color: #555; 
+        }
+        p { margin-bottom: 20px; 
+            line-height: 1.5; 
+        }
 
         .btn {
             display: inline-block;
@@ -122,7 +140,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             outline: none;
             cursor: pointer;
         }
-        .btn:hover { background: #b5b5b5; }
+        .btn:hover { 
+            background: #b5b5b5; 
+        }
 
         .unfollow-btn {
             background: #ff6b6b !important;
@@ -133,10 +153,25 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background: #e55b5b !important;
         }
 
-        .follow-block { display: flex; justify-content: center; gap: 40px; margin: 10px 0 20px; }
-        .follow-item { text-align: center; }
-        .follow-number { font-size: 24px; font-weight: bold; color: #333; }
-        .follow-label { font-size: 14px; color: #555; margin-top: 4px; }
+        .follow-block { 
+            display: flex; 
+            justify-content: center; 
+            gap: 40px; 
+            margin: 10px 0 20px; 
+        }
+        .follow-item { 
+            text-align: center; 
+        }
+        .follow-number { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #333; 
+        }
+        .follow-label { 
+            font-size: 14px; 
+            color: #555; 
+            margin-top: 4px; 
+        }
 
         /* 既存のスタイルの下に追加 */
         .post-img {
@@ -158,10 +193,10 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     </style>
 </head>
+<body>
 <header>
     <?php include '../navigation/nav.php'; ?>
 </header>
-<body>
 <main>
     <div class="profile-container">
 

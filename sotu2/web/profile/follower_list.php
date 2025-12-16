@@ -106,10 +106,10 @@ $follower_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     </style>
 </head>
+<body>
 <header>
     <?php include '../navigation/nav.php'; ?>
 </header>
-<body>
 <main>
     <h1>フォロワー一覧</h1>
 

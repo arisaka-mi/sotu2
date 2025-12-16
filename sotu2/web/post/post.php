@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>投稿画面</title>
+    <style>
+    </style>
 </head>
 <body>
-    <header>
-        <!-- グローバルナビ実装予定 -->
-    </header>
     <header>
         <?php include '../navigation/nav.php'; ?>
     </header>

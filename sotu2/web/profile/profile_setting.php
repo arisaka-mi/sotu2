@@ -188,9 +188,8 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
         }
     </style>
 </head>
-
 <body>
-<main>
+ <main>
     <div class="container">
 
         <?php if($error) echo "<p class='error'>{$error}</p>"; ?>
