@@ -104,6 +104,11 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin: 0; 
             padding: 0; 
         }
+        main {
+            max-width: 800px;   /* 好きな横幅 */
+            margin: 40px auto;  /* ← これで中央寄せ */
+            padding: 0 16px;    /* 画面端対策（スマホ） */
+        }
 
         .profile-container { 
             max-width: 500px; 

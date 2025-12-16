@@ -147,6 +147,12 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
             margin:0;
             padding:0;
         }
+        main {
+            max-width: 800px;   /* 好きな横幅 */
+            margin: 40px auto;  /* ← これで中央寄せ */
+            padding: 0 16px;    /* 画面端対策（スマホ） */
+        }
+        
         .container {
             max-width:500px;
             margin:50px auto;
@@ -236,7 +242,9 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
                 <input type="text" name="height" id="height" value="<?= $height ?>" required>
             </div>
             <p>骨格: <?= htmlspecialchars($user['bt_name'] ?? '未設定', ENT_QUOTES) ?>（編集不可）</p>
+            <a href="../diagnosis/body_ans.php">詳しく見る</a>
             <p>パーソナルカラー: <?= htmlspecialchars($user['pc_name'] ?? '未設定', ENT_QUOTES) ?>（編集不可）</p>
+            <a href="../diagnosis/pc_ans.php">詳しく見る</a>
             <p><a href="../login/logout.php">ログアウト</a></p>
 
             <button type="submit" class="btn">更新する</button>

@@ -81,13 +81,15 @@ unset($_SESSION['keyword']);
     <?php include '../navigation/nav.php'; ?>
 </header>
 <main>
-    <h2>検索ワード：<?= htmlspecialchars($keyword) ?></h2>
     <form method="get" action="search_control.php" class="text_kwd">
-        <input type="text" size="25" placeholder="<?= htmlspecialchars($keyword) ?>">
+        <input type="text" size="25" placeholder="キーワード検索">
         <a href="search_hit.php" data-title="search">
             <img src="../search/img/search_edge.PNG" alt="search" class="search_btn">
         </a>
     </form>
+
+
+    <h2>検索ワード：<?= htmlspecialchars($keyword) ?></h2>
 
     <?php if (empty($posts)): ?>
         <p>見つかりませんでした。</p>
