@@ -143,10 +143,10 @@ a.button2:hover {
 
     <a href="parsonal_color.php" class="button1">もう一度診断する</a>
 
-    <form action="save_personal_color.php" method="post">
+    <form action="save_pc.php" method="post">
         <input type="hidden" name="first" value="<?= $firstType ?>">
         <input type="hidden" name="second" value="<?= $secondType ?>">
-        <a href="save_personal_color.php" class="button2"
+        <a href="save_pc.php" class="button2"
            onclick="this.closest('form').submit(); return false;">
            プロフィールに保存する
         </a>

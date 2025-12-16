@@ -12,7 +12,16 @@ if (!isset($_SESSION['user_id'])) {
 $profile_user_id = isset($_GET['user_id']) ? (int)$_GET['user_id'] : $_SESSION['user_id'];
 
 // プロフィール対象ユーザーの情報取得
-$stmt = $pdo->prepare("SELECT * FROM User WHERE user_id = :user_id");
+$stmt = $pdo->prepare("
+    SELECT 
+        u.*,
+        bt.bt_name,
+        pc.pc_name
+    FROM user u
+    LEFT JOIN body_type bt ON u.bt_id = bt.bt_id
+    LEFT JOIN parsonal_color pc ON u.pc_id = pc.pc_id
+    WHERE u.user_id = :user_id
+");
 $stmt->bindValue(':user_id', $profile_user_id, PDO::PARAM_INT);
 $stmt->execute();
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
