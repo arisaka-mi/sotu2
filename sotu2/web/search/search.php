@@ -22,7 +22,7 @@ $recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>検索</title>
@@ -34,15 +34,57 @@ $recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
         }
 
         /*投稿 */
+        .post-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        /* 投稿カード */
         .post {
+            aspect-ratio: 3 / 4;
+            background: #fff;
             border: 1px solid #ccc;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .post:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+
+        /* 投稿画像 */
+        .post img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 8px;
             margin-bottom: 10px;
         }
-        .post img {
-            max-width: 200px;
-            display: block;
-            margin-bottom: 5px;
+
+        /* 投稿文 */
+        .post p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: auto;
+
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 日付 */
+        .post small {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
         }
 
         /* 検索バー */
@@ -86,6 +128,67 @@ $recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
             height: 18px;
             cursor: pointer;
         }
+
+        @media (max-width: 768px) {
+            .post-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .post-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== モーダル ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 16px;
+            position: relative;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-content img {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            object-fit: cover;
+            margin-bottom: 12px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -105,24 +208,74 @@ $recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- おすすめ投稿 -->
         <h2>おすすめの投稿</h2>
-        <?php if (!empty($recommended_posts)): ?>
-            <?php foreach ($recommended_posts as $post): ?>
-                <div class="post">
-                    <?php
-                        // DBに保存されている media_url は home/uploads/... の場合、search/uploads/... に置換
-                        $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url'] ?? '');
-                    ?>
-                    <?php if (!empty($post['media_url']) && file_exists($image_url)): ?>
-                        <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
-                    <?php endif; ?>
 
-                    <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
-                    <small>投稿日: <?= htmlspecialchars($post['created_at'] ?? '') ?></small>
-                </div>
-            <?php endforeach; ?>
+        <?php if (!empty($recommended_posts)): ?>
+            <div class="post-list">
+                <?php foreach ($recommended_posts as $post): ?>
+                    <div class="post">
+                        <?php
+                            $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url'] ?? '');
+                        ?>
+                        <?php if (!empty($post['media_url']) && file_exists($image_url)): ?>
+                            <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
+                        <?php endif; ?>
+
+                        <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
+                        <small>投稿日: <?= htmlspecialchars($post['created_at'] ?? '') ?></small>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         <?php else: ?>
             <p>おすすめ投稿はありません。</p>
         <?php endif; ?>
+
+        <!-- ===== モーダル ===== -->
+        <div id="postModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close">&times;</span>
+                <img id="modalImg" src="" alt="">
+                <p id="modalText"></p>
+                <small id="modalDate"></small>
+            </div>
+        </div>
+
+        <!-- ===== JavaScript ===== -->
+        <script>
+        const modal = document.getElementById('postModal');
+        const modalImg = document.getElementById('modalImg');
+        const modalText = document.getElementById('modalText');
+        const modalDate = document.getElementById('modalDate');
+        const closeBtn = document.querySelector('.modal-close');
+
+        document.querySelectorAll('.post').forEach(post => {
+            post.addEventListener('click', () => {
+                modalImg.src = post.dataset.img || '';
+                modalText.textContent = post.dataset.text || '';
+                modalDate.textContent = post.dataset.date || '';
+                modal.style.display = 'flex';
+            });
+        });
+
+        // 閉じる
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // 背景クリック
+        modal.addEventListener('click', e => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // ESCキー
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                modal.style.display = 'none';
+            }
+        });
+        </script>
+
     </main>
 </body>
 </html>

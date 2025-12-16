@@ -21,11 +21,18 @@ unset($_SESSION['keyword']);
             padding: 0 16px;    /* 画面端対策（スマホ） */
         }
 
+        .post-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 横3列 */
+            gap: 16px; /* 投稿間の余白 */
+        }
+
         .post {
             border: 1px solid #ccc;
             padding: 10px;
-            margin-bottom: 10px;
+            background: #fff;
         }
+
         .post img {
             max-width: 200px;
             display: block;
@@ -74,6 +81,19 @@ unset($_SESSION['keyword']);
             cursor: pointer;
         }
 
+        @media (max-width: 768px) {
+            .post-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .post-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
     </style>
 </head>
 <body>
@@ -81,6 +101,8 @@ unset($_SESSION['keyword']);
     <?php include '../navigation/nav.php'; ?>
 </header>
 <main>
+    <h2>検索ワード：<?= htmlspecialchars($keyword) ?></h2>
+
     <form method="get" action="search_control.php" class="text_kwd">
         <input type="text" size="25" placeholder="キーワード検索">
         <a href="search_hit.php" data-title="search">
@@ -88,26 +110,25 @@ unset($_SESSION['keyword']);
         </a>
     </form>
 
-
-    <h2>検索ワード：<?= htmlspecialchars($keyword) ?></h2>
-
     <?php if (empty($posts)): ?>
         <p>見つかりませんでした。</p>
     <?php else: ?>
-        <?php foreach ($posts as $post): ?>
-            <div class="post">
-                <?php
-                    // DBに保存されている media_url を search/uploads に置換
-                    $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url'] ?? '');
-                ?>
-                <?php if (!empty($post['media_url']) && file_exists($image_url)): ?>
-                    <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
-                <?php endif; ?>
+        <div class="post-list">
+            <?php foreach ($posts as $post): ?>
+                <div class="post">
+                    <?php
+                        $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url'] ?? '');
+                    ?>
+                    <?php if (!empty($post['media_url']) && file_exists($image_url)): ?>
+                        <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
+                    <?php endif; ?>
 
-                <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
-            </div>
-        <?php endforeach; ?>
+                    <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
+                </div>
+            <?php endforeach; ?>
+        </div>
     <?php endif; ?>
+
 
     <a href="search.php">← 検索に戻る</a>
 </main>
