@@ -40,7 +40,7 @@ $recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <header>
-    <!--<?php include '../navigation/nav.php'; ?>-->
+    <?php include '../navigation/nav.php'; ?>
 </header>
 <body>
     <main>
