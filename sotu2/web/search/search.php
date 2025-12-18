@@ -7,91 +7,29 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-require_once('../login/config.php'); // DB接続
+require_once '../login/config.php'; // DB接続
 
-$user_id = $_SESSION['user_id'];
+// おすすめ投稿を取得（最新の public 投稿）
+$sql_recommend = "
+SELECT 
+    p.post_id,
+    p.user_id,
+    p.media_url,
+    p.content_text,
+    p.created_at,
+    u.u_name,
+    u.pro_img,
+    (SELECT COUNT(*) FROM Comment c WHERE c.post_id = p.post_id) AS comment_count,
+    (SELECT COUNT(*) FROM PostLike l WHERE l.post_id = p.post_id) AS like_count
+FROM Post p
+JOIN User u ON p.user_id = u.user_id
+WHERE p.visibility = 'public'
+ORDER BY p.created_at DESC
+";
 
-try {
 
-    /* =========================
-       投稿＋コメント数＋いいね数
-    ========================= */
-    $sql_recommend = "
-    SELECT
-        p.*,
-        COUNT(DISTINCT c.cmt_id) AS comment_count,
-        COUNT(DISTINCT l.like_id) AS like_count
-    FROM Post p
-    LEFT JOIN Comment c ON p.post_id = c.post_id
-    LEFT JOIN Likes l ON p.post_id = l.post_id
-    WHERE p.visibility = 'public'
-    GROUP BY p.post_id
-    ORDER BY p.created_at DESC
-    ";
-    $stmt = $pdo->query($sql_recommend);
-    $recommended_posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    /* =========================
-       コメント取得（ユーザー情報付き）
-    ========================= */
-    $stmt2 = $pdo->query("
-        SELECT
-            c.*,
-            u.u_name,
-            u.pro_img
-        FROM Comment c
-        JOIN User u ON c.user_id = u.user_id
-        ORDER BY c.cmt_at ASC
-    ");
-    $all_comments = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    die("DBエラー：" . $e->getMessage());
-}
-
-/* =========================
-   post_id ごとにコメント整理
-========================= */
-$comments_by_post = [];
-foreach ($all_comments as $c) {
-    $comments_by_post[$c['post_id']][] = $c;
-}
-
-/* =========================
-   コメントツリー生成
-========================= */
-function build_comment_tree($comments, $parent_id = null) {
-    $tree = [];
-    foreach ($comments as $c) {
-        if ($c['parent_cmt_id'] == $parent_id) {
-            $c['children'] = build_comment_tree($comments, $c['cmt_id']);
-            $tree[] = $c;
-        }
-    }
-    return $tree;
-}
-
-function render_comments($comments, $level = 0) {
-    foreach ($comments as $c) {
-        echo '<div style="margin-left:' . ($level * 20) . 'px; border-left:1px solid #ccc; padding-left:8px; margin-top:10px;">';
-
-        $icon = "../profile/" . ($c['pro_img'] ?: "u_icon/default.png");
-
-        echo '<div style="display:flex; align-items:center; gap:8px;">';
-        echo '<img src="' . htmlspecialchars($icon) . '" style="width:28px;height:28px;border-radius:50%;">';
-        echo '<b>' . htmlspecialchars($c['u_name']) . '</b>';
-        echo '</div>';
-
-        echo '<p>' . nl2br(htmlspecialchars($c['cmt'])) . '</p>';
-        echo '<small>' . htmlspecialchars($c['cmt_at']) . '</small>';
-
-        if (!empty($c['children'])) {
-            render_comments($c['children'], $level + 1);
-        }
-
-        echo '</div>';
-    }
-}
+$stmt_recommend = $pdo->query($sql_recommend);
+$recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -229,7 +167,7 @@ function render_comments($comments, $level = 0) {
         .modal-content {
             background: #fff;
             width: 90%;
-            max-width: 500px;
+            max-width: 480px;
             padding: 20px;
             border-radius: 16px;
             position: relative;
@@ -248,11 +186,24 @@ function render_comments($comments, $level = 0) {
 
         .modal-close {
             position: absolute;
-            top: 10px;
-            right: 14px;
-            font-size: 24px;
+            top: -14px;        /* ← 画像の外へ */
+            right: -14px;
+            width: 32px;
+            height: 32px;
+
+            background: #fff;
+            border-radius: 50%;
+            font-size: 22px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             cursor: pointer;
+            z-index: 30;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
         }
+
 
         @keyframes fadeIn {
             from {
@@ -264,6 +215,100 @@ function render_comments($comments, $level = 0) {
                 transform: scale(1);
             }
         }
+
+        /* 画像ラッパー */
+        .modal-img-wrapper {
+            position: relative;
+        }
+
+        /* 投稿主オーバーレイ */
+        .modal-user-overlay {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 6px 10px;
+            border-radius: 999px;
+
+            background: rgba(0, 0, 0, 0.55);
+            color: #fff;
+
+            z-index: 10;
+        }
+
+        /* 投稿主アイコン */
+        .modal-user-overlay img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* ユーザー名 */
+        .modal-user-overlay span {
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+
+        /* ===== いいね・コメント横並び ===== */
+        /* ===== いいね画像ボタン ===== */
+        .like-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .like-icon {
+            width: 28px;
+            height: 28px;
+            display: block;
+        }
+
+        .like-btn:hover .like-icon {
+            transform: scale(1.1);
+        }
+
+        .like-icon {
+            transition: transform 0.15s ease;
+        }
+
+        /* ===== コメント画像ボタン ===== */
+        .comment-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .comment-icon {
+            width: 28px;
+            height: 28px;
+            display: block;
+        }
+
+        .comment-btn:hover .comment-icon {
+            transform: scale(1.1);
+        }
+
+        .comment-icon {
+            transition: transform 0.15s ease;
+        }
+
+        .post-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+
 
     </style>
 </head>
@@ -287,87 +332,263 @@ function render_comments($comments, $level = 0) {
         <?php if (!empty($recommended_posts)): ?>
         <div class="post-list">
 
-        <?php foreach ($recommended_posts as $post): ?>
-        <?php
-        $image_url = '';
-        if (!empty($post['media_url'])) {
-            $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url']);
-        }
-        ?>
-
-        <div class="post"
-            data-id="<?= $post['post_id'] ?>"
-            data-img="<?= htmlspecialchars($image_url) ?>"
-            data-text="<?= htmlspecialchars($post['content_text']) ?>"
-            data-tags="<?= htmlspecialchars($post['tags']) ?>"
-            data-date="投稿日: <?= htmlspecialchars($post['created_at']) ?>"
-            data-comments="<?= $post['comment_count'] ?>"
-            data-likes="<?= $post['like_count'] ?>"
-        >
-            <?php if ($image_url && file_exists($image_url)): ?>
-                <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
-            <?php endif; ?>
-
-            <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
-            <small>投稿日: <?= htmlspecialchars($post['created_at'] ?? '') ?></small>
-
-            <p>コメント: <?= $post['comment_count'] ?>件 / いいね: <?= $post['like_count'] ?>件</p>
-
+            <?php foreach ($recommended_posts as $post): ?>
             <?php
-                $tree = build_comment_tree($comments_by_post[$post['post_id']] ?? []);
-                render_comments($tree);
+            $image_url = '';
+            if (!empty($post['media_url'])) {
+                $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url']);
+            }
             ?>
-                    </div>
+
+            <div class="post"
+                data-post-id="<?= (int)$post['post_id'] ?>"
+                data-img="<?= htmlspecialchars($image_url) ?>"
+                data-text="<?= htmlspecialchars($post['content_text'] ?? '') ?>"
+                data-date="投稿日: <?= htmlspecialchars($post['created_at']) ?>"
+                data-user="<?= htmlspecialchars($post['u_name']) ?>"
+                data-user-img="<?= htmlspecialchars('../profile/' . ($post['pro_img'] ?: 'u_icon/default.png')) ?>"
+                data-likes="<?= (int)$post['like_count'] ?>"
+                data-comments="<?= (int)$post['comment_count'] ?>">
+
+
+                <?php if ($image_url && file_exists($image_url)): ?>
+                    <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
+                <?php endif; ?>
+
+                <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
+                <small>投稿日: <?= htmlspecialchars($post['created_at'] ?? '') ?></small>
+            </div>
+
+                <?php endforeach; ?>
 
         </div>
-        <?php endforeach; ?>
-
-</div>
-<?php else: ?>
-<p>おすすめ投稿はありません。</p>
-<?php endif; ?>
+        <?php else: ?>
+        <p>おすすめ投稿はありません。</p>
+        <?php endif; ?>
 
 
         <!-- ===== モーダル ===== -->
         <div id="postModal" class="modal">
             <div class="modal-content">
                 <span class="modal-close">&times;</span>
-                <img id="modalImg" src="" alt="">
+
+                <!-- 画像ラッパー -->
+                <div class="modal-img-wrapper">
+
+                    <!-- 投稿主（画像に重ねる） -->
+                    <div class="modal-user-overlay">
+                        <img id="modalUserImg">
+                        <span id="modalUser"></span>
+                    </div>
+
+                    <!-- 投稿画像 -->
+                    <img id="modalImg">
+                </div>
+
+
+
+                <!-- 本文 -->
                 <p id="modalText"></p>
                 <small id="modalDate"></small>
+
+                <div class="post-actions">
+
+                    <input type="hidden" id="modalPostIdLike">
+                    <input type="hidden" id="modalPostIdComment">
+
+                    <button type="button"
+                        class="like-btn"
+                        id="likeBtn"
+                        data-liked="0">
+                        <img src="../search/img/like_edge.PNG"
+                            alt="いいね"
+                            class="like-icon"
+                            id="likeIcon">
+                    </button>
+
+                    <span id="modalLikes">0</span>
+
+                    <button type="button"
+                        class="comment-btn"
+                        id="openCommentBtn"
+                        data-liked="0">
+                        <img src="../search/img/comment_edge.PNG"
+                            alt="コメント"
+                            class="comment-icon"
+                            id="ComentIcon">
+                    </button>
+
+                    <span id="modalCommentsCount">0</span>
+
+                </div>
+
+
+                <form method="post" action="../home/add_comment.php"
+                    id="commentForm"
+                    style="display:none; margin-top:10px;">
+                <input type="hidden" name="post_id" id="modalPostIdComment">
+                <textarea name="comment" required placeholder="コメントを書く..."
+                            style="width:100%;height:60px;"></textarea>
+                <button type="submit">送信</button>
+                </form>
+
+                <!-- コメント一覧 -->
+                <div id="modalCommentsArea" style="margin-top:10px;"></div>
+
             </div>
         </div>
 
         <!-- ===== JavaScript ===== -->
         <script>
+        /* ===============================
+        モーダル要素取得
+        ================================ */
         const modal = document.getElementById('postModal');
         const modalImg = document.getElementById('modalImg');
         const modalText = document.getElementById('modalText');
         const modalDate = document.getElementById('modalDate');
+        const modalUser = document.getElementById('modalUser');
+        const modalUserImg = document.getElementById('modalUserImg');
+        const modalLikes = document.getElementById('modalLikes');
+
         const closeBtn = document.querySelector('.modal-close');
 
+        const commentForm = document.getElementById('commentForm');
+        const openCommentBtn = document.getElementById('openCommentBtn');
+
+        const likeBtn = document.getElementById('likeBtn');
+        const likeIcon = document.getElementById('likeIcon');
+
+        const modalPostIdLike = document.getElementById('modalPostIdLike');
+        const modalPostIdComment = document.getElementById('modalPostIdComment');
+        const modalCommentsCount = document.getElementById('modalCommentsCount');
+
+
+
+        /* ===============================
+        投稿クリック → モーダル表示
+        ================================ */
         document.querySelectorAll('.post').forEach(post => {
             post.addEventListener('click', () => {
-                modalImg.src = post.dataset.img || '';
+
+                const postId = post.dataset.postId;
+
+                // 画像
+                if (post.dataset.img) {
+                    modalImg.src = post.dataset.img;
+                    modalImg.style.display = 'block';
+                } else {
+                    modalImg.style.display = 'none';
+                }
+
+                // テキスト
                 modalText.textContent = post.dataset.text || '';
                 modalDate.textContent = post.dataset.date || '';
+                modalUser.textContent = post.dataset.user || '';
+                modalUserImg.src = post.dataset.userImg || '';
+
+                // いいね数
+                modalLikes.textContent = post.dataset.likes ?? 0;
+
+                // コメント数 ← ★追加
+                modalCommentsCount.textContent = post.dataset.comments ?? 0;
+
+                // post_id
+                modalPostIdLike.value = postId;
+                modalPostIdComment.value = postId;
+
+                commentForm.style.display = 'none';
+
+                fetch(`../home/add_comment.php?post_id=${postId}`)
+                    .then(res => res.text())
+                    .then(html => {
+                        document.getElementById('modalCommentsArea').innerHTML = html;
+                    })
+                    .catch(() => {
+                        document.getElementById('modalCommentsArea').textContent =
+                            'コメントの取得に失敗しました';
+                    });
+
                 modal.style.display = 'flex';
             });
         });
 
-        // 閉じる
+
+
+        /* ===============================
+        いいねボタン
+        ================================ */
+        likeBtn.addEventListener('click', () => {
+
+            const postId = modalPostIdLike.value;
+            if (!postId) return;
+
+            fetch('../home/toggle_like.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `post_id=${postId}`
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.status !== 'ok') {
+                    alert(data.message || 'いいね処理に失敗しました');
+                    return;
+                }
+
+                // ハート画像切り替え
+                likeIcon.src = data.liked
+                    ? '../search/img/like_edge_2.PNG'
+                    : '../search/img/like_edge.PNG';
+
+                // いいね数更新
+                modalLikes.textContent = data.like_count;
+
+            })
+            .catch(() => alert('通信エラー'));
+        });
+
+        document.querySelectorAll('.post').forEach(post => {
+            post.addEventListener('click', () => {
+
+                const postId = post.dataset.postId;
+
+                // 既存処理は省略…
+
+                // コメント数を表示
+                modalCommentsCount.textContent =
+                    post.dataset.comments ?? 0;
+
+                modal.style.display = 'flex';
+            });
+        });
+
+
+
+        /* ===============================
+        コメントフォーム開閉
+        ================================ */
+        openCommentBtn.addEventListener('click', () => {
+            commentForm.style.display =
+                commentForm.style.display === 'none' ? 'block' : 'none';
+        });
+
+
+        /* ===============================
+        モーダルを閉じる
+        ================================ */
         closeBtn.addEventListener('click', () => {
             modal.style.display = 'none';
         });
 
-        // 背景クリック
         modal.addEventListener('click', e => {
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
         });
 
-        // ESCキー
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 modal.style.display = 'none';

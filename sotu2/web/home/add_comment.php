@@ -2,17 +2,23 @@
 session_start();
 require_once '../login/config.php';
 
+/* POST以外は終了 */
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    exit;
+}
+
+/* ログインチェック */
 if (!isset($_SESSION['user_id'])) {
-    exit('ログインしてください');
+    exit;
 }
 
 $user_id = $_SESSION['user_id'];
 $post_id = $_POST['post_id'] ?? null;
-$comment = $_POST['comment'] ?? '';
-$parent_cmt_id = $_POST['parent_cmt_id'] ?? null; // ← 返信
+$comment = trim($_POST['comment'] ?? '');
+$parent_cmt_id = $_POST['parent_cmt_id'] ?? null;
 
 if (!$post_id || $comment === '') {
-    exit('データ不足です');
+    exit;
 }
 
 try {
@@ -33,10 +39,9 @@ try {
     $stmt2->execute([$post_id, $user_id, $post_id]);
 
 } catch (PDOException $e) {
-    exit("データベースエラー: " . $e->getMessage());
+    exit; // 画面に出さない
 }
 
-// 通常のフォームなので リダイレクトでOK
-header("Location: timeline_public.php");
+/* フォーム送信なので戻す */
+header("Location: " . $_SERVER['HTTP_REFERER']);
 exit;
-
