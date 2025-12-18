@@ -4,7 +4,7 @@ require_once('../login/config.php'); // $pdo
 
 // ログインチェック
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login/login_form.php');
+    header('Location: ../login/login_from.php');
     exit();
 }
 
