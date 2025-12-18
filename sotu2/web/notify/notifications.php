@@ -7,11 +7,14 @@ if (!isset($_SESSION['user_id'])) {
 ?>
 
 
+
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <title>通知</title>
+
 
     <style>
         body {
@@ -21,6 +24,7 @@ if (!isset($_SESSION['user_id'])) {
             font-family: "Helvetica", "Arial", sans-serif;
         }
 
+
         .header {
             font-size: 22px;
             padding: 20px;
@@ -29,6 +33,7 @@ if (!isset($_SESSION['user_id'])) {
             border-bottom: 1px solid #ddd;
         }
 
+
         /* メインコンテナ */
         .notify-wrapper {
             max-width: 480px;
@@ -36,6 +41,7 @@ if (!isset($_SESSION['user_id'])) {
             padding: 20px 15px;
             position: relative;
         }
+
 
         /* 縦の線 */
         .timeline-line {
@@ -48,6 +54,7 @@ if (!isset($_SESSION['user_id'])) {
             z-index: 0;
         }
 
+
         /* 通知ブロック */
         .notify-block {
             position: relative;
@@ -56,6 +63,7 @@ if (!isset($_SESSION['user_id'])) {
             display: flex;
             align-items: center;
         }
+
 
         /* ブロックの背景部分（吹き出し） */
         .notify-box {
@@ -68,6 +76,7 @@ if (!isset($_SESSION['user_id'])) {
             z-index: 2;
         }
 
+
         /* アイコン（●の部分） */
         .icon-circle {
             width: 20px;
@@ -76,17 +85,20 @@ if (!isset($_SESSION['user_id'])) {
             background: black;
         }
 
+
         /* 各通知アイコン */
         .notify-icon {
             font-size: 22px;
             margin-right: 5px;
         }
 
+
         .notify-time {
             font-size: 12px;
             color: #666;
             margin-top: 4px;
         }
+
 
     </style>
 </head>
@@ -97,65 +109,74 @@ if (!isset($_SESSION['user_id'])) {
 <main>
     <div class="header">通知</div>
 
+
     <div class="notify-wrapper">
         <div class="timeline-line"></div>
+
 
         <div id="notifyList">読み込み中…</div>
     </div>
 
-    <script>
-    function loadNotifications() {
-        fetch("get_notifications.php")
-            .then(res => res.json())
-            .then(list => {
-                const box = document.getElementById("notifyList");
-                box.innerHTML = "";
+<script>
+function loadNotifications() {
+    fetch("./get_notifications.php")
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("HTTP error");
+            }
+            return res.json();
+        })
+        .then(list => {
+            const box = document.getElementById("notifyList");
+            box.innerHTML = "";
 
-                if (list.length === 0) {
-                    box.innerHTML = "<p style='text-align:center;'>通知はありません。</p>";
-                    return;
-                }
+            if (!Array.isArray(list) || list.length === 0) {
+                box.innerHTML = "<p style='text-align:center;'>通知はありません。</p>";
+                return;
+            }
 
-                list.forEach(n => {
-                    let icon = "";
-                    if (n.type === "like")     icon = "♡";
-                    if (n.type === "follow")   icon = "👤";
-                    if (n.type === "comment")  icon = "💬";
+            list.forEach(n => {
+                let icon = "";
+                if (n.type === "like")    icon = "♡";
+                if (n.type === "follow")  icon = "👤";
+                if (n.type === "comment") icon = "💬";
 
-                    const div = document.createElement("div");
-                    div.className = "notify-block";
+                const div = document.createElement("div");
+                div.className = "notify-block";
 
-                    div.innerHTML = `
-                        <div class="notify-box">
-                            <span class="notify-icon">${icon}</span>
-                            <div class="icon-circle"></div>
-                            <div>
-                                ${renderMessage(n)}
-                                <div class="notify-time">${n.created_at}</div>
-                            </div>
+                div.innerHTML = `
+                    <div class="notify-box">
+                        <span class="notify-icon">${icon}</span>
+                        <div class="icon-circle"></div>
+                        <div>
+                            <strong>${n.username}</strong> さんが
+                            ${renderMessage(n.type)}
+                            <div class="notify-time">${n.created_at}</div>
                         </div>
-                    `;
+                    </div>
+                `;
 
-                    box.appendChild(div);
-                });
+                box.appendChild(div);
             });
-    }
+        })
+        .catch(err => {
+            document.getElementById("notifyList").innerHTML =
+                "<p style='text-align:center;color:red;'>通知の取得に失敗しました</p>";
+            console.error(err);
+        });
+}
 
-    function renderMessage(n) {
-        if (n.type === "like") {
-            return `<strong>${n.username}</strong> さんがいいねしました`;
-        }
-        if (n.type === "follow") {
-            return `<strong>${n.username}</strong> さんがフォローしました`;
-        }
-        if (n.type === "comment") {
-            return `<strong>${n.username}</strong> さんがコメントしました`;
-        }
-        return "不明な通知";
-    }
+function renderMessage(type) {
+    if (type === "like") return "いいねしました";
+    if (type === "follow") return "フォローしました";
+    if (type === "comment") return "コメントしました";
+    return "アクションしました";
+}
 
-    loadNotifications();
-    </script>
+loadNotifications();
+</script>
+
+    
 </main>
 </body>
 </html>
