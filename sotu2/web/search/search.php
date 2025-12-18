@@ -7,18 +7,91 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-require_once '../login/config.php'; // DB接続
+require_once('../login/config.php'); // DB接続
 
-// おすすめ投稿を取得（最新の public 投稿）
-$sql_recommend = "
-SELECT *
-FROM Post
-WHERE visibility = 'public'
-ORDER BY created_at DESC
-";
+$user_id = $_SESSION['user_id'];
 
-$stmt_recommend = $pdo->query($sql_recommend);
-$recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
+try {
+
+    /* =========================
+       投稿＋コメント数＋いいね数
+    ========================= */
+    $sql_recommend = "
+    SELECT
+        p.*,
+        COUNT(DISTINCT c.cmt_id) AS comment_count,
+        COUNT(DISTINCT l.like_id) AS like_count
+    FROM Post p
+    LEFT JOIN Comment c ON p.post_id = c.post_id
+    LEFT JOIN Likes l ON p.post_id = l.post_id
+    WHERE p.visibility = 'public'
+    GROUP BY p.post_id
+    ORDER BY p.created_at DESC
+    ";
+    $stmt = $pdo->query($sql_recommend);
+    $recommended_posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    /* =========================
+       コメント取得（ユーザー情報付き）
+    ========================= */
+    $stmt2 = $pdo->query("
+        SELECT
+            c.*,
+            u.u_name,
+            u.pro_img
+        FROM Comment c
+        JOIN User u ON c.user_id = u.user_id
+        ORDER BY c.cmt_at ASC
+    ");
+    $all_comments = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    die("DBエラー：" . $e->getMessage());
+}
+
+/* =========================
+   post_id ごとにコメント整理
+========================= */
+$comments_by_post = [];
+foreach ($all_comments as $c) {
+    $comments_by_post[$c['post_id']][] = $c;
+}
+
+/* =========================
+   コメントツリー生成
+========================= */
+function build_comment_tree($comments, $parent_id = null) {
+    $tree = [];
+    foreach ($comments as $c) {
+        if ($c['parent_cmt_id'] == $parent_id) {
+            $c['children'] = build_comment_tree($comments, $c['cmt_id']);
+            $tree[] = $c;
+        }
+    }
+    return $tree;
+}
+
+function render_comments($comments, $level = 0) {
+    foreach ($comments as $c) {
+        echo '<div style="margin-left:' . ($level * 20) . 'px; border-left:1px solid #ccc; padding-left:8px; margin-top:10px;">';
+
+        $icon = "../profile/" . ($c['pro_img'] ?: "u_icon/default.png");
+
+        echo '<div style="display:flex; align-items:center; gap:8px;">';
+        echo '<img src="' . htmlspecialchars($icon) . '" style="width:28px;height:28px;border-radius:50%;">';
+        echo '<b>' . htmlspecialchars($c['u_name']) . '</b>';
+        echo '</div>';
+
+        echo '<p>' . nl2br(htmlspecialchars($c['cmt'])) . '</p>';
+        echo '<small>' . htmlspecialchars($c['cmt_at']) . '</small>';
+
+        if (!empty($c['children'])) {
+            render_comments($c['children'], $level + 1);
+        }
+
+        echo '</div>';
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -165,9 +238,12 @@ $recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
 
         .modal-content img {
             width: 100%;
-            aspect-ratio: 3 / 4;
+            max-width: 480px;
+            max-height: 600px;
             object-fit: cover;
-            margin-bottom: 12px;
+            margin: 0 auto 12px;
+            display: block;
+            border-radius: 12px;
         }
 
         .modal-close {
@@ -206,28 +282,51 @@ $recommended_posts = $stmt_recommend->fetchAll(PDO::FETCH_ASSOC);
 
         <hr>
 
-        <!-- おすすめ投稿 -->
         <h2>おすすめの投稿</h2>
 
         <?php if (!empty($recommended_posts)): ?>
-            <div class="post-list">
-                <?php foreach ($recommended_posts as $post): ?>
-                    <div class="post">
-                        <?php
-                            $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url'] ?? '');
-                        ?>
-                        <?php if (!empty($post['media_url']) && file_exists($image_url)): ?>
-                            <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
-                        <?php endif; ?>
+        <div class="post-list">
 
-                        <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
-                        <small>投稿日: <?= htmlspecialchars($post['created_at'] ?? '') ?></small>
+        <?php foreach ($recommended_posts as $post): ?>
+        <?php
+        $image_url = '';
+        if (!empty($post['media_url'])) {
+            $image_url = str_replace('../home/uploads/', '../search/uploads/', $post['media_url']);
+        }
+        ?>
+
+        <div class="post"
+            data-id="<?= $post['post_id'] ?>"
+            data-img="<?= htmlspecialchars($image_url) ?>"
+            data-text="<?= htmlspecialchars($post['content_text']) ?>"
+            data-tags="<?= htmlspecialchars($post['tags']) ?>"
+            data-date="投稿日: <?= htmlspecialchars($post['created_at']) ?>"
+            data-comments="<?= $post['comment_count'] ?>"
+            data-likes="<?= $post['like_count'] ?>"
+        >
+            <?php if ($image_url && file_exists($image_url)): ?>
+                <img src="<?= htmlspecialchars($image_url) ?>" alt="投稿画像">
+            <?php endif; ?>
+
+            <p><?= nl2br(htmlspecialchars($post['content_text'] ?? '内容なし')) ?></p>
+            <small>投稿日: <?= htmlspecialchars($post['created_at'] ?? '') ?></small>
+
+            <p>コメント: <?= $post['comment_count'] ?>件 / いいね: <?= $post['like_count'] ?>件</p>
+
+            <?php
+                $tree = build_comment_tree($comments_by_post[$post['post_id']] ?? []);
+                render_comments($tree);
+            ?>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <p>おすすめ投稿はありません。</p>
-        <?php endif; ?>
+
+        </div>
+        <?php endforeach; ?>
+
+</div>
+<?php else: ?>
+<p>おすすめ投稿はありません。</p>
+<?php endif; ?>
+
 
         <!-- ===== モーダル ===== -->
         <div id="postModal" class="modal">

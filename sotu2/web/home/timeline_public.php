@@ -1,5 +1,12 @@
 <?php
 session_start();
+
+// ログインチェック
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login/login.php");
+    exit;
+}
+
 require_once('../login/config.php');
 $user_id = $_SESSION['user_id'] ?? null;
 
