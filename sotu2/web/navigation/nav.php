@@ -44,8 +44,8 @@ if ($logged_in_user_id) {
             </a>
 
             <a href="../notify/notifications.php" data-title="post">
-                <img src="../navigation/img/inform_edge.PNG" alt="post" class="menu-icon">
-                <span class="menu-text">post</span>
+                <img src="../navigation/img/inform_edge.PNG" alt="inform" class="menu-icon">
+                <span class="menu-text">inform</span>
             </a>
         </nav>
 
