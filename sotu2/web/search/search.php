@@ -72,7 +72,21 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 #postModal .comment-btn:hover .comment-icon { transform: scale(1.05); }
 
 /* コメントモーダル */
-#commentModal{display:none;position:fixed;top:30px;left:calc(50% + 250px);width:350px;height:90vh;background:#fff;border-radius:16px;z-index:1100;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.2);padding:12px;display: flex;flex-direction: column;}
+#commentModal {
+    display: none;            /* 初期は非表示 */
+    position: fixed;
+    top: 30px;
+    left: calc(50% + 250px);
+    width: 350px;
+    height: 90vh;
+    background: #fff;
+    border-radius: 16px;
+    z-index: 1100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    padding: 12px;
+
+    flex-direction: column;   /* display:flex は JS で表示するときに flex に切り替える */
+}
 /* コメントリスト */
 #modalCommentsArea {
     flex: 1;               /* 高さを残り全部に */
