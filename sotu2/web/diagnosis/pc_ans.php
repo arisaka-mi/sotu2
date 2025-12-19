@@ -22,10 +22,10 @@ $firstPercent = round($firstScore / $total * 100);
 $secondPercent = 100 - $firstPercent;
 
 $typeName = [
-    "spring"=>"春（スプリング）",
-    "summer"=>"夏（サマー）",
-    "autumn"=>"秋（オータム）",
-    "winter"=>"冬（ウィンター）"
+    "spring"=>"イエベ春（スプリング）",
+    "summer"=>"ブルべ夏（サマー）",
+    "autumn"=>"イエベ秋（オータム）",
+    "winter"=>"ブルべ冬（ウィンター）"
 ];
 
 /* 説明文（骨格の comboDetail と同じ役割） */

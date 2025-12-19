@@ -241,9 +241,9 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
                 <label for="height">身長</label>
                 <input type="text" name="height" id="height" value="<?= $height ?>" required>
             </div>
-            <p>骨格: <?= htmlspecialchars($user['bt_name'] ?? '未設定', ENT_QUOTES) ?>（編集不可）</p>
+            <p>骨格: <?= htmlspecialchars($user['bt_name'] ?? '未設定', ENT_QUOTES) ?></p>
             <a href="../diagnosis/body_ans.php">詳しく見る</a>
-            <p>パーソナルカラー: <?= htmlspecialchars($user['pc_name'] ?? '未設定', ENT_QUOTES) ?>（編集不可）</p>
+            <p>パーソナルカラー: <?= htmlspecialchars($user['pc_name'] ?? '未設定', ENT_QUOTES) ?></p>
             <a href="../diagnosis/pc_ans.php">詳しく見る</a>
             <p><a href="../login/logout.php">ログアウト</a></p>
 
