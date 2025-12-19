@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,9 +11,7 @@
     </style>
 </head>
 <body>
-    <header>
-        <?php include '../navigation/nav.php'; ?>
-    </header>
+    <?php include '../navigation/nav.php'; ?>
     <main>
         <h1>新規投稿</h1>
 
@@ -40,3 +42,5 @@
     </main>
 </body>
 </html>
+
+

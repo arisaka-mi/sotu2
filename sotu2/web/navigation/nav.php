@@ -90,12 +90,20 @@ if ($logged_in_user_id) {
 }
 
 /* 中身 */
-.nav-container {
+/* .nav-container {
     display: flex;
     flex-direction: column;
     height: 100%;
     padding: 10px;
+} */
+
+.nav-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;   /* ← ここを変更 */
+    padding: 10px;
 }
+
 
 /* トグルボタン */
 .toggle-btn {
