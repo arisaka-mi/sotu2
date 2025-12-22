@@ -48,6 +48,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative; /* ← 重要 */
 }
 
 /* ファイル入力を隠す */
@@ -76,8 +77,17 @@ h1 {
     transform: scale(1.05);
 }
 
+/* ===== プレビュー画像 ===== */
+#preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+    display: none; /* 最初は非表示 */
+}
+
 /* ===============================
-   右：入力欄（囲わない）
+   右：入力欄
 ================================ */
 .form-area {
     flex: 1;
@@ -86,7 +96,7 @@ h1 {
     gap: 20px;
 }
 
-/* ===== タグ入力（薄グレー） ===== */
+/* ===== タグ入力 ===== */
 .tag-input {
     width: 100%;
     padding: 14px 18px;
@@ -97,7 +107,7 @@ h1 {
     outline: none;
 }
 
-/* ===== 投稿文（薄グレー） ===== */
+/* ===== 投稿文 ===== */
 .content-text {
     width: 100%;
     min-height: 180px;
@@ -136,11 +146,11 @@ h1 {
 }
 
 .public-btn {
-    background: #90caf9; /* 水色 */
+    background: #90caf9;
 }
 
 .friends-btn {
-    background: #f48fb1; /* ピンク */
+    background: #f48fb1;
 }
 </style>
 </head>
@@ -151,62 +161,91 @@ h1 {
 
 <main>
 
-    <h1>新規投稿</h1>
+<h1>新規投稿</h1>
 
-    <form action="upload.php" method="post" enctype="multipart/form-data">
-        <div class="post-layout">
+<form action="upload.php" method="post" enctype="multipart/form-data">
+<div class="post-layout">
 
-            <!-- 左：画像アップロード -->
-            <div class="image-area">
-                <label class="upload-label">
-                    ＋
-                    <input type="file" name="image" required>
-                </label>
-            </div>
+    <!-- 左：画像アップロード -->
+    <div class="image-area">
 
-            <!-- 右：入力欄 -->
-            <div class="form-area">
+        <label class="upload-label">
+            <span id="plus-icon">＋</span>
+            <input
+                type="file"
+                name="image"
+                accept="image/*"
+                onchange="previewImage(this)"
+                required
+            >
+        </label>
 
-                <!-- タグ -->
-                <input
-                    type="text"
-                    name="tags"
-                    class="tag-input"
-                    placeholder="タグ（カンマ区切り：メイク,スキンケア）"
-                >
+        <!-- プレビュー表示 -->
+        <img id="preview">
+    </div>
 
-                <!-- 投稿文 -->
-                <textarea
-                    name="content_text"
-                    class="content-text"
-                    placeholder="投稿文を入力してください"
-                ></textarea>
+    <!-- 右：入力欄 -->
+    <div class="form-area">
 
-                <!-- 公開範囲 -->
-                <input type="hidden" name="visibility" value="public" id="visibilityInput">
+        <input
+            type="text"
+            name="tags"
+            class="tag-input"
+            placeholder="タグ（カンマ区切り：メイク,スキンケア）"
+        >
 
-                <!-- 投稿ボタン -->
-                <div class="share-buttons">
-                    <button
-                        type="submit"
-                        class="public-btn"
-                        onclick="document.getElementById('visibilityInput').value='public'">
-                        全体公開
-                    </button>
+        <textarea
+            name="content_text"
+            class="content-text"
+            placeholder="投稿文を入力してください"
+        ></textarea>
 
-                    <button
-                        type="submit"
-                        class="friends-btn"
-                        onclick="document.getElementById('visibilityInput').value='friends'">
-                        フォロワー公開
-                    </button>
-                </div>
+        <input type="hidden" name="visibility" value="public" id="visibilityInput">
 
-            </div>
+        <div class="share-buttons">
+            <button
+                type="submit"
+                class="public-btn"
+                onclick="document.getElementById('visibilityInput').value='public'">
+                全体公開
+            </button>
+
+            <button
+                type="submit"
+                class="friends-btn"
+                onclick="document.getElementById('visibilityInput').value='friends'">
+                フォロワー公開
+            </button>
         </div>
-    </form>
+
+    </div>
+</div>
+</form>
 
 </main>
+
+<!-- ===============================
+     画像プレビュー用JS
+================================ -->
+<script>
+function previewImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const preview = document.getElementById('preview');
+        const plus = document.getElementById('plus-icon');
+
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        plus.style.display = 'none';
+    };
+
+    reader.readAsDataURL(file);
+}
+</script>
 
 </body>
 </html>

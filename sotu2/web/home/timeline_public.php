@@ -28,6 +28,8 @@ try {
     $recommend_users = $stmt_rec->fetchAll(PDO::FETCH_ASSOC);
 
     // ★ 投稿一覧取得（タグはサブクエリで）
+
+
     $sql = "
         SELECT 
             p.post_id,
@@ -35,18 +37,22 @@ try {
             p.media_url,
             p.content_text,
             p.created_at,
+            p.visibility,
             u.u_name,
             u.pro_img,
             (SELECT GROUP_CONCAT(t.tag_name SEPARATOR ', ')
-             FROM PostTag pt
-             JOIN Tag t ON pt.tag_id = t.tag_id
-             WHERE pt.post_id = p.post_id) AS tags,
+            FROM PostTag pt
+            JOIN Tag t ON pt.tag_id = t.tag_id
+            WHERE pt.post_id = p.post_id) AS tags,
             (SELECT COUNT(*) FROM Comment c WHERE c.post_id = p.post_id) AS comment_count,
             (SELECT COUNT(*) FROM PostLike l WHERE l.post_id = p.post_id) AS like_count
         FROM Post p
         JOIN User u ON p.user_id = u.user_id
+        WHERE p.visibility = 'public'
         ORDER BY p.created_at DESC
     ";
+
+
     $stmt = $pdo->query($sql);
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
