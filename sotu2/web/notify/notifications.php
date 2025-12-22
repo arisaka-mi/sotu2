@@ -5,125 +5,121 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 ?>
-
-
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <title>通知</title>
 
+<style>
+body {
+    margin: 0;
+    background: #f5f5f5;
+    font-family: "Helvetica", "Arial", sans-serif;
+}
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #f5f5f5;
-            font-family: "Helvetica", "Arial", sans-serif;
-        }
+/* ===== グローバルナビ回避 ===== */
+.main-area {
+    margin-left: 20vw;
+}
 
+/* ===== タイトル固定 ===== */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    font-size: 22px;
+    padding: 20px;
+    font-weight: bold;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
 
-        .header {
-            font-size: 22px;
-            padding: 20px;
-            font-weight: bold;
-            background: white;
-            border-bottom: 1px solid #ddd;
-        }
+/* ===== 通知エリア ===== */
+.notify-wrapper {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 30px 15px 60px;
+    position: relative;
+}
 
+/* ===== 串刺し縦線 ===== */
+.timeline-line {
+    position: absolute;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #bbb;
+    z-index: 1;
+}
 
-        /* メインコンテナ */
-        .notify-wrapper {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 20px 15px;
-            position: relative;
-        }
+/* ===== 通知1件 ===== */
+.notify-block {
+    margin: 30px 0;
+}
 
+/* ===== 通知カード ===== */
+.notify-box {
+    margin-left: 14px;     /* 線に少し刺さる */
+    padding: 14px 16px;
+    background: #fff;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
 
-        /* 縦の線 */
-        .timeline-line {
-            position: absolute;
-            left: 30px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #ccc;
-            z-index: 0;
-        }
+/* ===== アクションアイコン ===== */
+.action-icon {
+    width: 26px;
+    height: 26px;
+}
 
+/* ===== ユーザーアイコン ===== */
+.user-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
 
-        /* 通知ブロック */
-        .notify-block {
-            position: relative;
-            margin: 25px 0;
-            padding-left: 60px;
-            display: flex;
-            align-items: center;
-        }
-
-
-        /* ブロックの背景部分（吹き出し） */
-        .notify-box {
-            background: #e5e5e5;
-            padding: 12px 16px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 2;
-        }
-
-
-        /* アイコン（●の部分） */
-        .icon-circle {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: black;
-        }
-
-
-        /* 各通知アイコン */
-        .notify-icon {
-            font-size: 22px;
-            margin-right: 5px;
-        }
-
-
-        .notify-time {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-
-    </style>
+/* ===== 時刻 ===== */
+.notify-time {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+</style>
 </head>
-<header>
-    <?php include '../navigation/nav.php'; ?>
-</header>
-<body>
-<main>
-    <div class="header">通知</div>
 
+<body>
+
+<header>
+<?php include '../navigation/nav.php'; ?>
+</header>
+
+<div class="main-area">
+
+    <div class="header">通知</div>
 
     <div class="notify-wrapper">
         <div class="timeline-line"></div>
-
-
         <div id="notifyList">読み込み中…</div>
     </div>
 
+</div>
+
 <script>
+document.addEventListener("DOMContentLoaded", loadNotifications);
+
 function loadNotifications() {
     fetch("./get_notifications.php")
         .then(res => {
-            if (!res.ok) {
-                throw new Error("HTTP error");
-            }
+            if (!res.ok) throw new Error("HTTP error");
             return res.json();
         })
         .then(list => {
@@ -136,18 +132,18 @@ function loadNotifications() {
             }
 
             list.forEach(n => {
-                let icon = "";
-                if (n.type === "like")    icon = "♡";
-                if (n.type === "follow")  icon = "👤";
-                if (n.type === "comment") icon = "💬";
+                const actionIcon = getActionIcon(n.type);
+                const userIcon = n.profile_img
+                    ? `../assets/user/${n.profile_img}`
+                    : `../assets/user/default.png`;
 
                 const div = document.createElement("div");
                 div.className = "notify-block";
 
                 div.innerHTML = `
                     <div class="notify-box">
-                        <span class="notify-icon">${icon}</span>
-                        <div class="icon-circle"></div>
+                        <img src="${actionIcon}" class="action-icon">
+                        <img src="${userIcon}" class="user-icon">
                         <div>
                             <strong>${n.username}</strong> さんが
                             ${renderMessage(n.type)}
@@ -166,17 +162,21 @@ function loadNotifications() {
         });
 }
 
+/* ===== アクション別アイコン ===== */
+function getActionIcon(type) {
+    if (type === "like") return "../assets/icons/like.png";
+    if (type === "follow") return "../assets/icons/follow.png";
+    if (type === "comment") return "../assets/icons/comment.png";
+    return "../assets/icons/like.png";
+}
+
 function renderMessage(type) {
     if (type === "like") return "いいねしました";
     if (type === "follow") return "フォローしました";
     if (type === "comment") return "コメントしました";
     return "アクションしました";
 }
-
-loadNotifications();
 </script>
 
-    
-</main>
 </body>
 </html>
