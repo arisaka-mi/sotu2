@@ -18,6 +18,11 @@ if ($logged_in_user_id) {
 ?>
 
 <header class="global-nav" id="sidebar">
+
+    <div class="top-logo">
+        <img src="../navigation/img/icon_edge.PNG" alt="logo">
+    </div>
+
     <div class="nav-container">
 
         <button class="toggle-btn" id="toggleBtn">☰</button>
@@ -61,12 +66,22 @@ if ($logged_in_user_id) {
 </header>
 
 
-<!--仮置き・変更の可能性大-->
 <style>
     * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+.top-logo{
+    position: fixed;
+    top: 16px;
+    left: 170px;
+    z-index: 2000;
+}
+
+.top-logo img{
+    height: 60px;
 }
 
 /* ===== サイドバー ===== */

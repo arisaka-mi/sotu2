@@ -1,20 +1,60 @@
 <?php
 session_start();
-if(!isset($_SESSION['user_id'])){ header("Location: ../login/login.php"); exit; }
+if(!isset($_SESSION['user_id'])){
+    header("Location: ../login/login.php");
+    exit;
+}
+
 require_once '../login/config.php';
 
-// おすすめ投稿取得
-$sql_recommend = "
-SELECT p.post_id, p.user_id, p.media_url, p.content_text, p.created_at,
-       u.u_name, u.pro_img,
-       (SELECT COUNT(*) FROM Comment c WHERE c.post_id=p.post_id) AS comment_count,
-       (SELECT COUNT(*) FROM PostLike l WHERE l.post_id=p.post_id) AS like_count
+// 検索キーワード
+$keyword = $_GET['keyword'] ?? '';
+
+// =======================
+// 投稿取得SQL
+// =======================
+$sql = "
+SELECT DISTINCT
+    p.post_id,
+    p.user_id,
+    p.media_url,
+    p.content_text,
+    p.created_at,
+    u.u_name,
+    u.pro_img,
+    GROUP_CONCAT(t.tag_name ORDER BY t.tag_name) AS tags,
+    (SELECT COUNT(*) FROM Comment c WHERE c.post_id = p.post_id) AS comment_count,
+    (SELECT COUNT(*) FROM PostLike pl WHERE pl.post_id = p.post_id) AS like_count
 FROM Post p
 JOIN User u ON p.user_id = u.user_id
-WHERE p.visibility='public'
+LEFT JOIN PostTag pt ON p.post_id = pt.post_id
+LEFT JOIN Tag t ON pt.tag_id = t.tag_id
+WHERE p.visibility = 'public'
+";
+
+if ($keyword !== '') {
+    $sql .= "
+    AND (
+        p.content_text LIKE :kw
+        OR t.tag_name LIKE :kw
+        OR u.u_name LIKE :kw
+    )
+    ";
+}
+
+$sql .= "
+GROUP BY p.post_id
 ORDER BY p.created_at DESC
 ";
-$recommended_posts = $pdo->query($sql_recommend)->fetchAll(PDO::FETCH_ASSOC);
+
+$stmt = $pdo->prepare($sql);
+
+if ($keyword !== '') {
+    $stmt->bindValue(':kw', "%{$keyword}%", PDO::PARAM_STR);
+}
+
+$stmt->execute();
+$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -23,12 +63,86 @@ $recommended_posts = $pdo->query($sql_recommend)->fetchAll(PDO::FETCH_ASSOC);
 <title>検索</title>
 <style>
 main{max-width:800px;margin:40px auto;padding:0 16px;}
-.post-list{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-.post{aspect-ratio:3/4;background:#fff;border:1px solid #ccc;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
-.post:hover{transform:translateY(-4px);box-shadow:0 6px 16px rgba(0,0,0,0.15);}
-.post img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;margin-bottom:10px;}
-.post p{font-size:14px;line-height:1.6;margin-bottom:auto;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-.post small{font-size:12px;color:#666;margin-top:8px;}
+.post-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+
+.post{
+    aspect-ratio:3/4;
+    background:#fff;
+    border:1px solid #ccc;
+    border-radius:12px;
+    padding:10px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    transition:.2s;
+}
+.post:hover{
+    transform:translateY(-4px);
+    box-shadow:0 6px 16px rgba(0,0,0,.15);
+}
+/* 画像 */
+.post img{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    border-radius:8px;
+    margin-bottom:8px;
+    flex-shrink:0;
+}
+/* ===== テキストエリア ===== */
+.post-body{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    overflow:hidden;
+}
+.post-text{
+    font-size:14px;
+    line-height:1.6;
+    font-weight:500;
+    margin-bottom:4px;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+    flex-shrink:0;
+}
+.post small{
+    font-size:12px;
+    color:#666;
+    flex-shrink:0;
+}
+.post p{
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:6px;
+    display:-webkit-box;
+    -webkit-line-clamp:2;   /* ← 3 → 2 に */
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
+/* ===== タグ ===== */
+.post-tags{
+    display:flex;
+    gap:6px;
+    margin-top:6px;
+    flex-shrink:0;
+}
+
+.tag{
+    font-size:10px;
+    padding:3px 8px;
+    background:#f5f5f5;
+    color:#666;
+    border-radius:999px;
+    cursor:pointer;
+    white-space:nowrap;
+}
+.tag:hover{background:#333;color:#fff;}
+.tag.more{background:transparent;color:#999;padding:0 4px;}
+
 
 /* 検索バー */
 .text_kwd { box-sizing: border-box; position: relative; border: 1px solid #999;
@@ -39,6 +153,10 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 .text_kwd a { position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
             display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
 .text_kwd .search_btn { width: 18px; height: 18px; cursor: pointer; }
+
+hr{
+    margin-bottom: 20px;
+}
 
 @media (max-width: 768px) { .post-list { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .post-list { grid-template-columns: 1fr; } }
@@ -52,6 +170,18 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 .modal-body{flex:1;overflow-y:auto;padding:0 8px 12px;}
 .modal-content img#modalImg{width:100%;max-width:480px;max-height:600px;object-fit:cover;margin:0 auto 12px;display:block;border-radius:12px;}
 .modal-close{position:absolute;top:10px;right:10px;width:32px;height:32px;background:#fff;border-radius:50%;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:30;}
+.modal-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:8px;
+}
+.modal-tags .tag{
+    font-size:12px;
+    padding:4px 12px;
+    border-radius:999px;
+    background:#eee;
+}
 
 
 /* 投稿一覧アイコン */
@@ -84,14 +214,13 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
     z-index: 1100;
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     padding: 12px;
-
     flex-direction: column;   /* display:flex は JS で表示するときに flex に切り替える */
 }
 /* コメントリスト */
 #modalCommentsArea {
     flex: 1;               /* 高さを残り全部に */
     overflow-y: auto;      /* スクロール可能 */
-    margin-bottom: 8px;
+    margin-bottom: 8px 12px;
 }
 .comment-item{display:flex;gap:10px;align-items:flex-start;margin-bottom:4px;}
 .comment-item img{width:32px;height:32px;border-radius:50%;object-fit:cover;}
@@ -101,6 +230,11 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 .comment-replies{margin-left:30px;display:flex;flex-direction:column;gap:8px;}
 .reply-btn{font-size:12px;background:none;border:none;color:#007bff;cursor:pointer;padding:0;margin-top:4px;}
 .reply-btn:hover{text-decoration:underline;}
+#commentForm {
+    border-top: 1px solid #ddd;
+    padding: 8px;
+    background: #fff;
+}
 /* コメントフォーム部分 */
 .comment-input-wrap {
     display: flex;
@@ -108,9 +242,28 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
     align-items: flex-end;
     /* 下部に固定 */
 }
-.comment-input-wrap textarea{flex:1;min-height:42px;resize:vertical;padding:10px 12px;border-radius:12px;border:1px solid #ccc;font-size:14px;}
+.comment-input-wrap textarea {
+    flex: 1;
+    min-height: 42px;
+    max-height: 120px;
+    resize: none;              /* 重要：勝手に崩れない */
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
 .comment-input-wrap textarea:focus{outline:none;border-color:#666;}
-.comment-submit{padding:0 16px;height:42px;border:none;border-radius:999px;background:#333;color:#fff;cursor:pointer;}
+.comment-submit {
+    height: 42px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 999px;
+    background: #333;
+    color: #fff;
+    cursor: pointer;
+}
 .comment-submit:hover{opacity:0.85;}
 /* コメント入力用テキストボックス */
 .comment-input {
@@ -134,7 +287,37 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
     box-shadow: 0 0 6px rgba(0,123,255,0.25);
     background-color: #fff;        /* 背景を白に */
 }
+/* 返信中バー */
+.reply-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f0f4ff;
+    color: #333;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    margin: 6px 8px;
+}
 
+/* × ボタン */
+.reply-info button {
+    all: unset;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    color: #555;
+}
+.reply-info button:hover {
+    color: #000;
+}
+
+/* 返信対象コメントの強調 */
+.comment-item.reply-target {
+    background: #f5f7ff;
+    border-radius: 10px;
+    padding: 6px;
+}
 </style>
 </head>
 <body>
@@ -144,7 +327,7 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 <main>
     <!-- 検索フォーム -->
     <form method="get" action="search_control.php" class="text_kwd">
-        <input type="text" size="25" placeholder="キーワード検索">
+        <input type="text" name="keyword" placeholder="キーワード検索" value="<?= htmlspecialchars($keyword) ?>">
         <a href="search_hit.php" data-title="search">
             <img src="../search/img/search_edge.PNG" alt="search" class="search_btn">
         </a>
@@ -152,11 +335,15 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 
     <hr>
 
-<h2>おすすめの投稿</h2>
-<?php if(!empty($recommended_posts)): ?>
+<!-- ★ 投稿一覧 -->
+<?php if($posts): ?>
 <div class="post-list">
-<?php foreach($recommended_posts as $post):
+<?php foreach($posts as $post):
     $img_url = !empty($post['media_url'])?str_replace('../home/uploads/','../search/uploads/',$post['media_url']):'';
+    $tags = [];
+    if (!empty($post['tags'])) {
+        $tags = explode(',', $post['tags']);
+    }
 ?>
 <div class="post"
     data-post-id="<?= $post['post_id'] ?>"
@@ -166,14 +353,33 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
     data-user="<?= htmlspecialchars($post['u_name']) ?>"
     data-user-img="<?= htmlspecialchars('../profile/'.($post['pro_img']?:'u_icon/default.png')) ?>"
     data-likes="<?= $post['like_count'] ?>"
-    data-comments="<?= $post['comment_count'] ?>">
-    <?php if($img_url && file_exists($img_url)): ?><img src="<?= htmlspecialchars($img_url) ?>"><?php endif; ?>
-    <p><?= nl2br(htmlspecialchars($post['content_text'])) ?></p>
-    <small>投稿日: <?= htmlspecialchars($post['created_at']) ?></small>
+    data-comments="<?= $post['comment_count'] ?>"
+    data-tags="<?= htmlspecialchars($post['tags'] ?? '') ?>">
+
+    <?php if($img_url && file_exists($img_url)): ?>
+        <img src="<?= htmlspecialchars($img_url) ?>">
+    <?php endif; ?>
+    <div class="post-body">
+        <p class="post-text"><?= nl2br(htmlspecialchars($post['content_text'])) ?></p>
+        <small>投稿日: <?= htmlspecialchars($post['created_at']) ?></small>
+
+        <div class="post-tags">
+            <?php foreach(array_slice($tags,0,2) as $tag): ?>
+                <span class="tag" data-tag="<?= htmlspecialchars($tag) ?>">
+                    #<?= htmlspecialchars($tag) ?>
+                </span>
+            <?php endforeach; ?>
+            <?php if(count($tags) > 2): ?>
+                <span class="tag more">…</span>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 <?php endforeach; ?>
 </div>
-<?php else: ?><p>おすすめ投稿はありません。</p><?php endif; ?>
+<?php else: ?>
+    <p>おすすめ投稿はありません。</p>
+<?php endif; ?>
 
 <!-- 投稿モーダル -->
 <div id="postModal" class="modal">
@@ -187,10 +393,14 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
         <div class="modal-body">
             <p id="modalText"></p>
             <small id="modalDate"></small>
+            <div id="modalTags" class="modal-tags"></div>
             <div class="post-actions">
                 <input type="hidden" id="modalPostIdLike">
                 <button type="button" class="like-btn" id="likeBtn">
-                    <img src="../search/img/like_edge.PNG" id="likeIcon" class="like-icon">
+                    <img src="../search/img/like_edge.PNG"
+                        id="likeIcon"
+                        class="like-icon"
+                        data-liked="0">
                 </button>
                 <span id="modalLikes">0</span>
                 <button type="button" class="comment-btn" id="openCommentBtn">
@@ -207,6 +417,10 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
     <h3>コメント</h3>
     <div id="modalCommentsArea"></div>
     <form id="commentForm">
+        <div id="replyInfo" class="reply-info" style="display:none;">
+            <span id="replyToName"></span> 返信中
+            <button type="button" id="cancelReplyTop">×</button>
+        </div>
         <input type="hidden" name="post_id" id="modalPostIdComment">
         <input type="hidden" name="parent_cmt_id" id="parentCmtId">
         <div class="comment-input-wrap">
@@ -239,12 +453,14 @@ const commentTextarea = document.getElementById('commentTextarea');
 const parentCmtId = document.getElementById('parentCmtId');
 const cancelReplyBtn = document.getElementById('cancelReplyBtn');
 
-let currentPostId = null;
+const modalTags = document.getElementById('modalTags');
 
 // 投稿クリックでモーダル表示
 document.querySelectorAll('.post').forEach(p=>{
     p.addEventListener('click',()=>{
+
         currentPostId = p.dataset.postId;
+
         modalImg.src = p.dataset.img;
         modalText.textContent = p.dataset.text;
         modalDate.textContent = p.dataset.date;
@@ -253,9 +469,47 @@ document.querySelectorAll('.post').forEach(p=>{
         modalLikes.textContent = p.dataset.likes;
         modalCommentsCount.textContent = p.dataset.comments;
         commentPostId.value = currentPostId;
-        modal.style.display='flex';
+
+        // ✅ タグ表示（ここが正しい）
+        modalTags.innerHTML = '';
+        if(p.dataset.tags){
+            p.dataset.tags.split(',').forEach(tag=>{
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.textContent = '#' + tag;
+                modalTags.appendChild(span);
+            });
+        }
+
+        modal.style.display = 'flex';
     });
 });
+document.querySelectorAll('.tag').forEach(tag=>{
+    tag.addEventListener('click', e=>{
+        e.stopPropagation(); // モーダル開かない
+        const name = tag.dataset.tag;
+        location.href = `search_control.php?keyword=${encodeURIComponent(name)}`;
+    });
+});
+
+
+likeBtn.addEventListener('click', () => {
+    let liked = likeIcon.dataset.liked === "1";
+    let count = Number(modalLikes.textContent);
+
+    if (!liked) {
+        // いいね ON
+        likeIcon.src = "../search/img/like_edge_2.PNG"; // ❤️
+        likeIcon.dataset.liked = "1";
+        modalLikes.textContent = count + 1;
+    } else {
+        // いいね OFF
+        likeIcon.src = "../search/img/like_edge.PNG"; // 🤍
+        likeIcon.dataset.liked = "0";
+        modalLikes.textContent = count - 1;
+    }
+});
+
 
 // 投稿モーダル閉じる
 closeBtn.addEventListener('click', () => {
@@ -280,7 +534,7 @@ document.addEventListener('keydown', e => {
 
 // コメントモーダル表示
 openCommentBtn.addEventListener('click',()=>{
-    commentModal.style.display='block';
+    commentModal.style.display='flex';
     loadComments(currentPostId);
 });
 
@@ -297,22 +551,39 @@ function loadComments(postId){
 // 親コメント返信
 function attachReplyButtons(){
     document.querySelectorAll('.reply-btn').forEach(btn=>{
-        btn.onclick=()=>{
-            parentCmtId.value=btn.dataset.parentId;
-            commentTextarea.placeholder=`@${btn.dataset.userName} に返信`;
+        btn.onclick = () => {
+            parentCmtId.value = btn.dataset.parentId;
+
+            // 名前表示
+            document.getElementById('replyToName').textContent = btn.dataset.userName;
+            document.getElementById('replyInfo').style.display = 'flex';
+
+            // 対象コメントをハイライト
+            document.querySelectorAll('.comment-item')
+                .forEach(c => c.classList.remove('reply-target'));
+            btn.closest('.comment-item').classList.add('reply-target');
+
+            commentTextarea.placeholder = `@${btn.dataset.userName} に返信`;
             commentTextarea.focus();
-            cancelReplyBtn.style.display='inline';
         }
     });
 }
 
 // 返信キャンセル
-cancelReplyBtn.addEventListener('click',()=>{
-    parentCmtId.value='';
-    commentTextarea.placeholder='コメントを書く...';
-    cancelReplyBtn.style.display='none';
+function cancelReply() {
+    parentCmtId.value = '';
+    commentTextarea.placeholder = 'コメントを書く...';
+
+    document.getElementById('replyInfo').style.display = 'none';
+    document.querySelectorAll('.comment-item')
+        .forEach(c => c.classList.remove('reply-target'));
+
     commentTextarea.focus();
-});
+}
+
+cancelReplyBtn.onclick = cancelReply;
+document.getElementById('cancelReplyTop').onclick = cancelReply;
+
 
 // コメント送信
 commentForm.addEventListener('submit',e=>{
