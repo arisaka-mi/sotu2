@@ -1,93 +1,104 @@
 <?php
 session_start();
-require_once('../login/config.php'); // $pdo
+require_once('../login/config.php');
 
 // ログインチェック
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login/login_from.php');
+    header('Location: ../login/login_form.php');
     exit();
 }
 
-$login_user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
 
-// アップロード先ディレクトリ
-$homeDir   = "../home/uploads/";
-$searchDir = "../search/uploads/";
+/* =========================
+   POSTデータ取得
+========================= */
+$content_text = $_POST['content_text'] ?? '';
+$tags_input   = $_POST['tags'] ?? '';
+$visibility   = $_POST['visibility'] ?? 'public';
 
-// ディレクトリが存在しない場合は作成
-if (!file_exists($homeDir)) mkdir($homeDir, 0777, true);
-if (!file_exists($searchDir)) mkdir($searchDir, 0777, true);
+/* =========================
+   画像アップロード
+========================= */
+$media_url = null;
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+if (!empty($_FILES['image']['name'])) {
+    $upload_dir = '../home/uploads/';
 
-    // 画像ファイルの名前
-    $imageName = time() . "_" . basename($_FILES["image"]["name"]);
-
-    // home にアップロード
-    if (!move_uploaded_file($_FILES["image"]["tmp_name"], $homeDir . $imageName)) {
-        die("画像アップロードに失敗しました。");
+    if (!is_dir($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
     }
 
-    // search にコピー
-    if (!copy($homeDir . $imageName, $searchDir . $imageName)) {
-        die("search用ディレクトリへのコピーに失敗しました。");
+    $filename = time() . '_' . basename($_FILES['image']['name']);
+    $filepath = $upload_dir . $filename;
+
+    if (!move_uploaded_file($_FILES['image']['tmp_name'], $filepath)) {
+        die('画像アップロードに失敗しました');
     }
 
-    // DBに保存する値
-    $media_url    = $homeDir . $imageName;  // home 側パスを保存
-    $content_text = $_POST["content_text"] ?? "";
-    $tags_input   = $_POST["tags"] ?? "";   // カンマ区切り
-    $visibility   = $_POST["visibility"] ?? "public"; // デフォルト public
-    $tag_names    = array_filter(array_map('trim', explode(',', $tags_input)));
-    $created_at   = date("Y-m-d");
+    $media_url = $filepath;
+}
 
-    try {
-        // 1. Postに登録
-        $stmt = $pdo->prepare(
-            "INSERT INTO Post (user_id, media_url, content_text, created_at, visibility)
-             VALUES (:user_id, :media_url, :content_text, :created_at, :visibility)"
-        );
-        $stmt->execute([
-            ':user_id'      => $login_user_id,
-            ':media_url'    => $media_url,
-            ':content_text' => $content_text,
-            ':created_at'   => $created_at,
-            ':visibility'   => $visibility
-        ]);
-        $post_id = $pdo->lastInsertId();
+/* =========================
+   DB保存
+========================= */
+try {
+    $sql = "
+        INSERT INTO Post (user_id, media_url, content_text, visibility, created_at)
+        VALUES (:uid, :media, :text, :visibility, NOW())
+    ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':uid'        => $user_id,
+        ':media'      => $media_url,
+        ':text'       => $content_text,
+        ':visibility' => $visibility
+    ]);
 
-        // 2. タグ処理
-        foreach ($tag_names as $tag_name) {
-            // タグが既に存在するか確認
-            $stmtTag = $pdo->prepare("SELECT tag_id FROM Tag WHERE tag_name = :tag_name");
-            $stmtTag->execute([':tag_name' => $tag_name]);
-            $tag = $stmtTag->fetch();
-
-            if ($tag) {
-                $tag_id = $tag['tag_id'];
-            } else {
-                // 新しいタグを追加
-                $stmtInsertTag = $pdo->prepare("INSERT INTO Tag (tag_name) VALUES (:tag_name)");
-                $stmtInsertTag->execute([':tag_name' => $tag_name]);
-                $tag_id = $pdo->lastInsertId();
-            }
-
-            // posttag に登録
-            $stmtPostTag = $pdo->prepare(
-                "INSERT INTO posttag (post_id, tag_id) VALUES (:post_id, :tag_id)"
-            );
-            $stmtPostTag->execute([
-                ':post_id' => $post_id,
-                ':tag_id'  => $tag_id
-            ]);
-        }
-
-        // ✅ 投稿完了後に timeline_public.php にリダイレクト
-        header("Location: ../home/timeline_public.php");
-        exit(); // header後は必ず exit
-
-    } catch (PDOException $e) {
-        echo "データベースエラー：" . $e->getMessage();
-    }
+} catch (PDOException $e) {
+    die('DBエラー：' . $e->getMessage());
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>投稿完了</title>
+<meta http-equiv="refresh" content="3;url=../home/timeline_public.php">
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f5f5;
+    font-family: sans-serif;
+}
+.box {
+    background: white;
+    padding: 32px 40px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.box h1 {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+.box p {
+    color: #666;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+    <h1>投稿が完了しました！</h1>
+    <p>3秒後にホームへ戻ります</p>
+</div>
+
+</body>
+</html>
