@@ -38,17 +38,18 @@ h1 {
 }
 
 /* ===============================
-   左：画像アップロード（薄グレー）
+   左：画像アップロード枠
 ================================ */
 .image-area {
     flex: 1;
     background: #f2f2f2;
     border-radius: 24px;
-    padding: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative; /* ← 重要 */
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+
+    /* ★ サイズ固定（正方形） */
+    aspect-ratio: 1 / 1;
 }
 
 /* ファイル入力を隠す */
@@ -58,6 +59,15 @@ h1 {
 
 /* プラスボタン */
 .upload-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.upload-circle {
     width: 140px;
     height: 140px;
     border-radius: 50%;
@@ -68,22 +78,22 @@ h1 {
     align-items: center;
     font-size: 64px;
     color: #bdbdbd;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
-.upload-label:hover {
-    background: #fafafa;
+.upload-circle:hover {
     transform: scale(1.05);
 }
 
 /* ===== プレビュー画像 ===== */
 #preview {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    border-radius: 20px;
-    display: none; /* 最初は非表示 */
+    object-fit: cover;      /* ★ 枠いっぱい */
+    border-radius: 24px;    /* ★ グレー枠と完全一致 */
+    display: none;
 }
 
 /* ===============================
@@ -96,7 +106,6 @@ h1 {
     gap: 20px;
 }
 
-/* ===== タグ入力 ===== */
 .tag-input {
     width: 100%;
     padding: 14px 18px;
@@ -107,7 +116,6 @@ h1 {
     outline: none;
 }
 
-/* ===== 投稿文 ===== */
 .content-text {
     width: 100%;
     min-height: 180px;
@@ -137,12 +145,6 @@ h1 {
     font-size: 15px;
     color: #ffffff;
     cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.15s ease;
-}
-
-.share-buttons button:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
 }
 
 .public-btn {
@@ -169,8 +171,10 @@ h1 {
     <!-- 左：画像アップロード -->
     <div class="image-area">
 
-        <label class="upload-label">
-            <span id="plus-icon">＋</span>
+        <label class="upload-label" id="uploadLabel">
+            <div class="upload-circle">
+                <span id="plus-icon">＋</span>
+            </div>
             <input
                 type="file"
                 name="image"
@@ -180,7 +184,7 @@ h1 {
             >
         </label>
 
-        <!-- プレビュー表示 -->
+        <!-- プレビュー -->
         <img id="preview">
     </div>
 
@@ -225,7 +229,7 @@ h1 {
 </main>
 
 <!-- ===============================
-     画像プレビュー用JS
+     画像プレビューJS
 ================================ -->
 <script>
 function previewImage(input) {
@@ -236,11 +240,16 @@ function previewImage(input) {
 
     reader.onload = function(e) {
         const preview = document.getElementById('preview');
-        const plus = document.getElementById('plus-icon');
+        const uploadLabel = document.getElementById('uploadLabel');
 
         preview.src = e.target.result;
         preview.style.display = 'block';
-        plus.style.display = 'none';
+
+        // プラス＆アップロードUIを完全に消す
+        uploadLabel.style.display = 'none';
+
+        // 1枚限定
+        input.disabled = true;
     };
 
     reader.readAsDataURL(file);
