@@ -339,7 +339,7 @@ hr{
 <?php if($posts): ?>
 <div class="post-list">
 <?php foreach($posts as $post):
-    $img_url = !empty($post['media_url'])?str_replace('../home/uploads/','../search/uploads/',$post['media_url']):'';
+    $img_url = !empty($post['media_url']) ? '../home/' . $post['media_url'] : '';
     $tags = [];
     if (!empty($post['tags'])) {
         $tags = explode(',', $post['tags']);
@@ -357,7 +357,7 @@ hr{
     data-tags="<?= htmlspecialchars($post['tags'] ?? '') ?>">
 
     <?php if($img_url && file_exists($img_url)): ?>
-        <img src="<?= htmlspecialchars($img_url) ?>">
+        <img src="<?= htmlspecialchars($img_url, ENT_QUOTES) ?>">
     <?php endif; ?>
     <div class="post-body">
         <p class="post-text"><?= nl2br(htmlspecialchars($post['content_text'])) ?></p>

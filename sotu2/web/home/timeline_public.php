@@ -132,71 +132,99 @@ function render_comments($comments, $level = 0) {
 <meta charset="UTF-8">
 <title>タイムライン</title>
 <style>
-main{max-width:800px;margin:40px auto;padding:0 16px;}
-.post-list{
-    display: flex;
-    flex-direction: column; /* 縦に並べる */
-    gap: 24px;              /* 投稿間の余白 */
-    max-width: 800px;       /* 横幅を制限 */
-    margin: 0 auto;         /* 中央寄せ */
+main {
+    max-width: 800px;        /* 投稿コンテンツの最大幅 */
+    margin: 40px auto;
+    padding: 0 16px;
+    box-sizing: border-box;
 }
+
+/* 投稿全体 */
 .post-list .post {
-    background: none;          /* 背景を白に戻す */
-    border-radius: 0;          /* 角丸を解除 */
-    box-shadow: none;          /* 影を削除 */
-    padding: 0;                /* 内側余白をリセット */
-    max-width: 800px;          /* 投稿幅は維持 */
-    margin: 0 auto 24px;       /* 中央寄せ＋下マージン */
-    transition: none;          /* ホバーアニメは無効 */
+    width: 75%;             /* 親にフィット */
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-sizing: border-box;
+    margin: 0 auto; /* 中央寄せ */
 }
 
-.post-list .post img.post-media {
-    width: auto;       /* 投稿画像の横幅を統一 */
-    height: 450px;      /* 投稿画像の高さを統一 */
-    object-fit: cover;  /* 画像の比率を保ちつつ枠に収める */
-    border-radius: 0;   /* 角丸が不要な場合は0 */
-    margin: 8px 0;
-
-}
-
-.post-list .post p,
-.post-list .post .tags,
-.post-list .post .post-footer {
-    margin: 4px 0;
-    line-height: 1.4;
-    color: #333;
-}
-
-.post-list .comment-btn,
-.post-list form button {
-    padding: 4px 8px;
-    border-radius: 4px;       /* 角丸を小さく */
-    background: #eee;          /* シンプルなグレー */
-    color: #333;
-    border: 1px solid #ccc;
-    cursor: pointer;
-}
-
-.post-list .comment-btn:hover,
-.post-list form button:hover {
-    background: #ddd;
-}
+/* 投稿画像 */
 .post-image-wrapper {
-    position: relative; /* 子要素を絶対配置可能に */
+    width: 75%; /* 元は100% */
+    margin: 0 auto; /* 中央寄せ */
+    position: relative;
+}
+.post-media {
+    width: 100%;       /* 横幅を親に合わせる */
+    height: auto;      /* 高さは自動で縦横比維持 */
+    object-fit: contain; /* 画像を切り取らずに表示 */
+    display: block;
+    border-radius: 12px;
+    margin: 0 auto; /* 中央寄せ */
 }
 
-.post-media {
-    width: 100%;
-    height: 450px;
-    object-fit: cover;
-    display: block;
+/* 投稿者情報オーバーレイ */
+.post-user-overlay {
+    position: absolute;  /* 画像上に重ねる */
+    top: 8px;            /* 画像の上端からの距離 */
+    left: 8px;           /* 画像の左端からの距離 */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.15); /* 半透明黒で文字を見やすく */
+    padding: 4px 8px;
+    border-radius: 12px;
+    color: #fff;
+    z-index: 10;          /* 画像より上に表示 */
 }
+
+/* 投稿アイコン */
+.post-footer {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.like-btn,
+.comment-btn {
+    all: unset;               /* デフォルトスタイルリセット */
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;                 /* アイコンと数字の間 */
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.like-btn img,
+.comment-btn img {
+    width: 24px;
+    height: 24px;
+}
+
+.like-btn:hover,
+.comment-btn:hover {
+    background: #e0e0e0;
+    transform: scale(1.05);
+}
+
+.like-btn img,
+.comment-btn img {
+    width: 24px;
+    height: 24px;
+}
+
 
 /* 投稿者情報＋投稿日のオーバーレイ */
 .post-user-overlay {
     position: absolute;
-    top: 8px;
-    left: 8px;
+    top: 12px;
+    left: 12px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -225,27 +253,14 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
     color: #eee;
 }
 
-/* 投稿アイコン */
-.like-icon,
-.comment-icon {
-    width: 24px;  /* お好みのサイズに調整 */
-    height: 24px;
-}
-.like-btn,
-.comment-btn {
-    all: unset;        /* すべてのスタイルをリセット */
-    cursor: pointer;   /* クリック可能にする */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
+
 #postModal .like-icon,
 #postModal .comment-icon {
-    width: 20px;
-    height: 20px;
+    background: #ddd;
 }
 #postModal .like-btn:hover .like-icon,
 #postModal .comment-btn:hover .comment-icon { transform: scale(1.05); }
+
 
 
 /* ===== 上部エリア ===== */
@@ -530,39 +545,40 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 
 
     <!-- 投稿テキスト -->
+    <div class="post-text" style="margin-top:10px; padding:8px 0; font-size:14px; line-height:1.5; color:#333;">
+        <?= nl2br(htmlspecialchars($post['content_text'])) ?>
+    </div>
+
+    <!-- 投稿タグ -->
     <?php $tags = isset($post['tags']) ? explode(', ', $post['tags']) : [];?>
-    <div class="post-tags">
-        <?php foreach(array_slice($tags, 0, 2) as $tag): ?>
-            <span class="tag" data-tag="<?= htmlspecialchars($tag) ?>">
-                #<?= htmlspecialchars($tag) ?>
-            </span>
-        <?php endforeach; ?>
-        <?php if(count($tags) > 2): ?>
-            <span class="tag more">…</span>
-        <?php endif; ?>
-    </div>
+    <?php if(!empty($tags)): ?>
+        <div class="post-tags" style="margin-bottom:8px; display:flex; gap:6px; flex-wrap:wrap;">
+            <?php foreach(array_slice($tags, 0, 2) as $tag): ?>
+                <span class="tag" style="background:#f0f0f0; padding:2px 6px; border-radius:8px; font-size:12px;">
+                    #<?= htmlspecialchars($tag) ?>
+                </span>
+            <?php endforeach; ?>
+            <?php if(count($tags) > 2): ?>
+                <span class="tag more" style="font-size:12px;">…</span>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
 
-    <!-- フッター情報 -->
     <div class="post-footer">
-        <span>コメント: <?= $post['comment_count'] ?>件</span>
-        <span>いいね: <span id="like-count-<?= $post['post_id'] ?>"><?= $post['like_count'] ?></span></span>
+        <!-- いいねボタン -->
+        <button type="button" class="like-btn" data-post-id="<?= $post['post_id'] ?>">
+            <img src="../home/img/like_edge.PNG" class="like-icon" data-liked="0">
+            <span id="like-count-<?= $post['post_id'] ?>"><?= $post['like_count'] ?></span>
+        </button>
+
+        <!-- コメントボタン -->
+        <button type="button" class="comment-btn" data-post-id="<?= $post['post_id'] ?>">
+            <img src="../home/img/comment_edge.PNG" class="comment-icon" data-comments="0">
+            <span id="comment-count-<?= $post['post_id'] ?>"><?= $post['comment_count'] ?></span>
+        </button>
     </div>
 
-    <!-- いいねボタン -->
-    <button type="button" class="like-btn" id="likeBtn">
-        <img src="../search/img/like_edge.PNG"
-            id="likeIcon"
-            class="like-icon"
-            data-liked="0">
-    </button>
-    <span id="modalLikes">0</span>
-
-    <!-- コメントを見るボタン -->
-    <button type="button" class="comment-btn" id="openCommentBtn">
-        <img src="../search/img/comment_edge.PNG" id="commentIcon" class="comment-icon">
-    </button>
-    <span id="modalCommentsCount">0</span>
 </div>
 
         <?php endforeach; ?>
@@ -606,9 +622,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const replyToName = document.getElementById('replyToName');
     const cancelReplyTop = document.getElementById('cancelReplyTop');
 
+
+    document.querySelectorAll('.like-btn').forEach(likeBtn => {
+        likeBtn.addEventListener('click', async () => {
+            const likeIcon = likeBtn.querySelector('.like-icon');
+            const modalLikes = likeBtn.nextElementSibling; // <span> like数
+            const postId = likeBtn.dataset.postId;
+
+            try {
+                const formData = new FormData();
+                formData.append('post_id', postId);
+
+                const res = await fetch('../home/toggle_like.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if(data.status !== 'ok'){
+                    alert('いいね処理に失敗しました: ' + (data.message||''));
+                    return;
+                }
+
+                // いいねの見た目切り替え
+                if(data.liked){
+                    likeIcon.src = "../search/img/like_edge_2.PNG"; // ❤️
+                    likeIcon.dataset.liked = "1";
+                } else {
+                    likeIcon.src = "../search/img/like_edge.PNG"; // 🤍
+                    likeIcon.dataset.liked = "0";
+                }
+
+                // いいね数更新
+                modalLikes.textContent = data.like_count;
+
+            } catch(e){
+                console.error(e);
+                alert('通信エラーが発生しました');
+            }
+        });
+    });
+
     // コメントを見るボタン
-    document.querySelectorAll('.comment-btn').forEach(btn=>{
-        btn.addEventListener('click', e=>{
+    document.querySelectorAll('.comment-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
             e.stopPropagation();
             const postDiv = btn.closest('.post');
             const postId = postDiv.dataset.postId;
@@ -618,6 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadComments(postId);
         });
     });
+
 
     // モーダル閉じるボタン
     closeCommentModal.addEventListener('click', () => {
@@ -695,6 +753,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+// コメントモーダル自動閉じ処理
+let observer = null;
+
+function observePostVisibility(postDiv) {
+    if (observer) observer.disconnect(); // 前の監視を解除
+
+    observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                // 投稿が少しでも画面外に出たらモーダルを閉じる
+                commentModal.style.display = 'none';
+                commentList.innerHTML = '';
+                cancelReply();
+            }
+        });
+    }, { threshold: 0 }); // 0 = 少しでも見えなければ閉じる
+
+    observer.observe(postDiv);
+}
+
+// コメントボタンクリック時に呼び出す
+document.querySelectorAll('.comment-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const postDiv = btn.closest('.post');
+        const postId = postDiv.dataset.postId;
+        commentPostId.value = postId;
+
+        commentModal.style.display = 'flex';
+        loadComments(postId);
+
+        // 投稿の表示監視開始
+        observePostVisibility(postDiv);
+    });
+});
+
 
 </script>
 </main>

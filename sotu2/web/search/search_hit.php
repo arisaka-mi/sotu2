@@ -294,7 +294,16 @@ hr{
 <?php if($posts): ?>
 <div class="post-list">
 <?php foreach($posts as $post):
-    $img_url = !empty($post['media_url'])?str_replace('../home/uploads/','../search/uploads/',$post['media_url']):'';
+    // 画像URL
+    $img_url = !empty($post['media_url'])
+        ? '../home/' . $post['media_url']   // ← home/uploads のまま
+        : '';
+
+    // ユーザーアイコン
+    $userImg = !empty($post['pro_img'])
+        ? '../profile/' . $post['pro_img']
+        : '../profile/u_icon/default.png';
+
     $tags = [];
     if (!empty($post['tags'])) {
         $tags = explode(',', $post['tags']);
@@ -302,22 +311,17 @@ hr{
 ?>
 <div class="post"
     data-post-id="<?= (int)($post['post_id'] ?? 0) ?>"
-    data-img="<?= htmlspecialchars($img_url) ?>"
-    data-text="<?= htmlspecialchars($post['content_text']) ?>"
-    data-date="投稿日: <?= htmlspecialchars($post['created_at']) ?>"
-    data-user="<?= htmlspecialchars($post['u_name']) ?>"
-    data-user-img="<?= htmlspecialchars($userImg) ?>"
+    data-img="<?= htmlspecialchars($img_url, ENT_QUOTES) ?>"
+    data-text="<?= htmlspecialchars($post['content_text'], ENT_QUOTES) ?>"
+    data-date="投稿日: <?= htmlspecialchars($post['created_at'], ENT_QUOTES) ?>"
+    data-user="<?= htmlspecialchars($post['u_name'], ENT_QUOTES) ?>"
+    data-user-img="<?= htmlspecialchars($userImg, ENT_QUOTES) ?>"
     data-likes="<?= (int)($post['like_count'] ?? 0) ?>"
     data-comments="<?= (int)($post['comment_count'] ?? 0) ?>"
-    data-tags="<?= htmlspecialchars($post['tags'] ?? '') ?>">
+    data-tags="<?= htmlspecialchars($post['tags'] ?? '', ENT_QUOTES) ?>">
 
-    <?php
-    $userImg = !empty($post['pro_img'])
-        ? '../profile/' . $post['pro_img']
-        : '../profile/u_icon/default.png';
-    ?>
     <?php if($img_url && file_exists($img_url)): ?>
-        <img src="<?= htmlspecialchars($img_url) ?>">
+        <img src="<?= htmlspecialchars($img_url, ENT_QUOTES) ?>">
     <?php endif; ?>
     <div class="post-body">
         <p class="post-text"><?= nl2br(htmlspecialchars($post['content_text'])) ?></p>
@@ -325,7 +329,7 @@ hr{
 
         <div class="post-tags">
             <?php foreach(array_slice($tags,0,2) as $tag): ?>
-                <span class="tag" data-tag="<?= htmlspecialchars($tag) ?>">
+                <span class="tag" data-tag="<?= htmlspecialchars($tag, ENT_QUOTES) ?>">
                     #<?= htmlspecialchars($tag) ?>
                 </span>
             <?php endforeach; ?>
@@ -478,22 +482,46 @@ document.querySelectorAll('.tag').forEach(tag=>{
 });
 
 
-likeBtn.addEventListener('click', () => {
-    let liked = likeIcon.dataset.liked === "1";
-    let count = Number(modalLikes.textContent);
+document.querySelectorAll('.like-btn').forEach(likeBtn => {
+    likeBtn.addEventListener('click', async () => {
+        const likeIcon = likeBtn.querySelector('.like-icon');
+        const modalLikes = likeBtn.nextElementSibling; // <span> like数
+        const postId = likeBtn.dataset.postId;
 
-    if (!liked) {
-        // いいね ON
-        likeIcon.src = "../search/img/like_edge_2.PNG"; // ❤️
-        likeIcon.dataset.liked = "1";
-        modalLikes.textContent = count + 1;
-    } else {
-        // いいね OFF
-        likeIcon.src = "../search/img/like_edge.PNG"; // 🤍
-        likeIcon.dataset.liked = "0";
-        modalLikes.textContent = count - 1;
-    }
+        try {
+            const formData = new FormData();
+            formData.append('post_id', postId);
+
+            const res = await fetch('../home/toggle_like.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if(data.status !== 'ok'){
+                alert('いいね処理に失敗しました: ' + (data.message||''));
+                return;
+            }
+
+            // いいねの見た目切り替え
+            if(data.liked){
+                likeIcon.src = "../home/img/like_edge_2.PNG"; // ❤️
+                likeIcon.dataset.liked = "1";
+            } else {
+                likeIcon.src = "../home/img/like_edge.PNG"; // 🤍
+                likeIcon.dataset.liked = "0";
+            }
+
+            // いいね数更新
+            modalLikes.textContent = data.like_count;
+
+        } catch(e){
+            console.error(e);
+            alert('通信エラーが発生しました');
+        }
+    });
 });
+
 
 
 // 投稿モーダル閉じる
