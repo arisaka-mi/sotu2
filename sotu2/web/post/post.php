@@ -246,10 +246,9 @@ function previewImage(input) {
         preview.style.display = 'block';
 
         // プラス＆アップロードUIを完全に消す
-        uploadLabel.style.display = 'none';
+        uploadLabel.querySelector('.upload-circle').style.display = 'none';
 
-        // 1枚限定
-        input.disabled = true;
+        // input.disabled = true; ← 削除
     };
 
     reader.readAsDataURL(file);

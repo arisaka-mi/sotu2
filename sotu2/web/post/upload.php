@@ -22,9 +22,9 @@ $visibility   = $_POST['visibility'] ?? 'public';
 ========================= */
 $media_url = null;
 
-if (!empty($_FILES['image']['name'])) {
-    $upload_dir = '../home/uploads/';
+if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
 
+    $upload_dir = '../home/uploads/';
     if (!is_dir($upload_dir)) {
         mkdir($upload_dir, 0777, true);
     }
@@ -32,11 +32,18 @@ if (!empty($_FILES['image']['name'])) {
     $filename = time() . '_' . basename($_FILES['image']['name']);
     $filepath = $upload_dir . $filename;
 
-    if (!move_uploaded_file($_FILES['image']['tmp_name'], $filepath)) {
-        die('画像アップロードに失敗しました');
+    if (move_uploaded_file($_FILES['image']['tmp_name'], $filepath)) {
+        $media_url = $filepath; // 成功したらパスをセット
+    } else {
+        // アップロード失敗時に詳細を表示
+        echo '<pre>';
+        var_dump($_FILES['image']);
+        die('画像アップロードに失敗しました。アップロード先ディレクトリの権限を確認してください。');
     }
 
-    $media_url = $filepath;
+} elseif (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
+    // ファイルが送信されているがエラーの場合
+    die('ファイルアップロードエラー：' . $_FILES['image']['error']);
 }
 
 /* =========================
