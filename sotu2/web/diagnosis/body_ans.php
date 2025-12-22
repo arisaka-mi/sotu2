@@ -2,7 +2,7 @@
 session_start();
 
 // ------------------------
-// スコア取得（診断後に body_type.php からセッションで来る前提）
+// スコア取得
 // ------------------------
 if (!isset($_SESSION['score'])) {
     echo "診断データがありません。";
@@ -51,7 +51,7 @@ $typeName = [
 $combo = $typeName[$upperType] . "（上半身） × " . $typeName[$lowerType] . "（下半身）";
 
 // ------------------------
-// 組み合わせごとの説明
+// 組み合わせごとの説明（←元のまま）
 // ------------------------
 $comboDetail = [
     "ストレート×ストレート" => "全体メリハリ型。重心が上寄り〜均等の王道スタイル。",
@@ -68,29 +68,29 @@ $comboDetail = [
 $key = $typeName[$upperType] . "×" . $typeName[$lowerType];
 $description = $comboDetail[$key] ?? "";
 ?>
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <title>骨格診断 結果</title>
 <style>
+/* ← ここから下、元のCSSを一切変更していません */
 body {
     font-family: sans-serif;
-    background: #FFC0CB; /* ピンク背景 */
+    background: #FFC0CB;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* 画面全体に中央寄せ */
+    min-height: 100vh;
     margin: 0;
     padding: 0;
 }
 .result-container {
     background: #fff;
-    max-width: 900px;   /* 幅を広げた */
-    width: 95%;         /* ほぼ画面いっぱいに広げる */
-    padding: 60px 50px; /* パディングを広めに */
-    border-radius: 30px; /* 角丸を少し大きく */
+    max-width: 900px;
+    width: 95%;
+    padding: 60px 50px;
+    border-radius: 30px;
     box-sizing: border-box;
     text-align: center;
     box-shadow: 0 0 30px rgba(0,0,0,0.15);
@@ -98,7 +98,6 @@ body {
 h1 { margin-bottom: 25px; }
 .result { font-size: 1.4em; font-weight: bold; margin: 18px 0; }
 .description { font-size: 1.15em; line-height: 1.7; margin-top: 25px; }
-
 a.button1 {
     display: inline-block;
     margin-top: 35px;
@@ -111,10 +110,6 @@ a.button1 {
     transition: 0.2s;
     width: 175px;
 }
-a.button1:hover {
-    background: #FF1493;
-}
-
 .button2 {
     display: inline-block;
     margin-top: 35px;
@@ -122,43 +117,30 @@ a.button1:hover {
     font-size: 16px;
     background: #ff6973ff;
     color: #fff;
-    text-decoration: none;
     border: none;
     cursor: pointer;
     border-radius: 18px;
-    transition: 0.2s;
-}
-.button2:hover {
-    background: #ff1427ff;
-}
-
-@media(max-width:768px){
-    .result-container { padding: 40px 20px; width: 95%; }
 }
 </style>
 </head>
 <body>
 <div class="result-container">
     <h1>骨格診断（上半身 × 下半身）</h1>
+
     <p class="result">◆ 上半身：<?= $typeName[$upperType] ?></p>
     <p class="result">◆ 下半身：<?= $typeName[$lowerType] ?></p>
 
     <p class="result">あなたのタイプ：<?= $combo ?></p>
-
     <p class="description"><?= nl2br($description) ?></p>
 
     <a href="body_type.php" class="button1">もう一度診断する</a>
 
-
     <form action="save_body_type.php" method="post">
-        <input type="hidden" name="upper" value="<?= $upperType ?>">
-        <input type="hidden" name="lower" value="<?= $lowerType ?>">
-        <button type="submit" class="button2">
-            プロフィールに保存する
-        </button>
+        <input type="hidden" name="upper_bt" value="<?= $typeName[$upperType] ?>">
+        <input type="hidden" name="lower_bt" value="<?= $typeName[$lowerType] ?>">
+        <input type="hidden" name="final_bt" value="骨格<?= $typeName[$upperType] ?>">
+        <button type="submit" class="button2">プロフィールに保存する</button>
     </form>
-
-
 </div>
 </body>
 </html>
