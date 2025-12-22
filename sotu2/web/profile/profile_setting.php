@@ -244,9 +244,8 @@ $height = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
             <p>骨格: <?= htmlspecialchars($user['bt_name'] ?? '未設定', ENT_QUOTES) ?></p>
             <a href="../diagnosis/body_detail.php">詳しく見る</a>
             <p>パーソナルカラー: <?= htmlspecialchars($user['pc_name'] ?? '未設定', ENT_QUOTES) ?></p>
-            <a href="../diagnosis/pc_ans.php">詳しく見る</a>
+            <a href="../diagnosis/pc_detail.php">詳しく見る</a>
             <p><a href="../login/logout.php">ログアウト</a></p>
-
             <button type="submit" class="btn">更新する</button>
             <a href="profile.php" class="btn" style="background:#6c757d;">キャンセル</a>
         </form>

@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once(__DIR__ . '/../login/config.php'); // DB接続
+require_once(__DIR__ . '/../login/config.php');
 
 // ログインチェック
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login/login_from.php");
+    header("Location: ../login/login_form.php");
     exit();
 }
 
@@ -14,10 +14,9 @@ if (!isset($_POST['first']) || !isset($_POST['second'])) {
     exit();
 }
 
-$first = $_POST['first'];   // spring / summer / autumn / winter
-$second = $_POST['second'];
+$first = $_POST['first'];   // spring
+$second = $_POST['second']; // summer 等
 
-// ===== 表示名マップ（pc_ans.php と一致させる）=====
 $pcMap = [
     "spring" => "イエベ春",
     "summer" => "ブルべ夏",
@@ -25,34 +24,40 @@ $pcMap = [
     "winter" => "ブルべ冬"
 ];
 
-// 念のため存在チェック
-if (!isset($pcMap[$first])) {
+if (!isset($pcMap[$first]) || !isset($pcMap[$second])) {
     echo "不正なパーソナルカラーです。";
     exit();
 }
 
-$pcName = $pcMap[$first]; // 1stタイプを保存する
+$firstName = $pcMap[$first];
+$secondName = $pcMap[$second];
 
-// ===== personal_color テーブルから pc_id を取得 =====
+/* ===== 1st pc_id ===== */
 $stmt = $pdo->prepare(
     "SELECT pc_id FROM parsonal_color WHERE pc_name = ?"
 );
-$stmt->execute([$pcName]);
-$pcRow = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->execute([$firstName]);
+$firstRow = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$pcRow) {
-    echo "パーソナルカラーIDが取得できません。";
+/* ===== 2nd pc_id ===== */
+$stmt->execute([$secondName]);
+$secondRow = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$firstRow || !$secondRow) {
+    echo "パーソナルカラーID取得失敗";
     exit();
 }
 
-$pc_id = $pcRow['pc_id'];
+$stmt = $pdo->prepare("
+    UPDATE user
+    SET pc_id = ?, pc_second_id = ?
+    WHERE user_id = ?
+");
+$stmt->execute([
+    $firstRow['pc_id'],
+    $secondRow['pc_id'],
+    $_SESSION['user_id']
+]);
 
-// ===== ユーザーに保存 =====
-$stmt = $pdo->prepare(
-    "UPDATE user SET pc_id = ? WHERE user_id = ?"
-);
-$stmt->execute([$pc_id, $_SESSION['user_id']]);
-
-// プロフィール画面へ
 header("Location: ../profile/profile_setting.php?saved=1");
 exit();
