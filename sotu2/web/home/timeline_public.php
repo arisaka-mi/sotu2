@@ -225,7 +225,27 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
     color: #eee;
 }
 
-
+/* 投稿アイコン */
+.like-icon,
+.comment-icon {
+    width: 24px;  /* お好みのサイズに調整 */
+    height: 24px;
+}
+.like-btn,
+.comment-btn {
+    all: unset;        /* すべてのスタイルをリセット */
+    cursor: pointer;   /* クリック可能にする */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+#postModal .like-icon,
+#postModal .comment-icon {
+    width: 20px;
+    height: 20px;
+}
+#postModal .like-btn:hover .like-icon,
+#postModal .comment-btn:hover .comment-icon { transform: scale(1.05); }
 
 
 /* ===== 上部エリア ===== */
@@ -510,8 +530,18 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 
 
     <!-- 投稿テキスト -->
-    <p><?= nl2br(htmlspecialchars($post['content_text'])) ?></p>
-    <p class="tags">タグ: <?= htmlspecialchars($post['tags']) ?></p>
+    <?php $tags = isset($post['tags']) ? explode(', ', $post['tags']) : [];?>
+    <div class="post-tags">
+        <?php foreach(array_slice($tags, 0, 2) as $tag): ?>
+            <span class="tag" data-tag="<?= htmlspecialchars($tag) ?>">
+                #<?= htmlspecialchars($tag) ?>
+            </span>
+        <?php endforeach; ?>
+        <?php if(count($tags) > 2): ?>
+            <span class="tag more">…</span>
+        <?php endif; ?>
+    </div>
+
 
     <!-- フッター情報 -->
     <div class="post-footer">
@@ -520,15 +550,19 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
     </div>
 
     <!-- いいねボタン -->
-    <form method="post" action="./toggle_like.php">
-        <input type="hidden" name="post_id" value="<?= $post['post_id'] ?>">
-        <button type="submit">いいね</button>
-    </form>
+    <button type="button" class="like-btn" id="likeBtn">
+        <img src="../search/img/like_edge.PNG"
+            id="likeIcon"
+            class="like-icon"
+            data-liked="0">
+    </button>
+    <span id="modalLikes">0</span>
 
     <!-- コメントを見るボタン -->
-    <button type="button" class="comment-btn">
-        コメントを見る（<?= $post['comment_count'] ?>件）
+    <button type="button" class="comment-btn" id="openCommentBtn">
+        <img src="../search/img/comment_edge.PNG" id="commentIcon" class="comment-icon">
     </button>
+    <span id="modalCommentsCount">0</span>
 </div>
 
         <?php endforeach; ?>
