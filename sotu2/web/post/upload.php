@@ -65,6 +65,50 @@ try {
 } catch (PDOException $e) {
     die('DBエラー：' . $e->getMessage());
 }
+
+$post_id = $pdo->lastInsertId();
+
+if (!empty($tags_input)) {
+
+    // 例: "#cat #dog,food" → ["cat","dog","food"]
+    $tags = preg_split('/[\s,#]+/', $tags_input, -1, PREG_SPLIT_NO_EMPTY);
+
+    foreach ($tags as $tag_name) {
+
+        // 前後の空白除去
+        $tag_name = trim($tag_name);
+        if ($tag_name === '') continue;
+
+        // ① Tag テーブルに存在するか確認
+        $stmt = $pdo->prepare(
+            "SELECT tag_id FROM Tag WHERE tag_name = :tag_name"
+        );
+        $stmt->execute([':tag_name' => $tag_name]);
+        $tag = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($tag) {
+            $tag_id = $tag['tag_id'];
+        } else {
+            // ② なければ Tag に追加
+            $stmt = $pdo->prepare(
+                "INSERT INTO Tag (tag_name) VALUES (:tag_name)"
+            );
+            $stmt->execute([':tag_name' => $tag_name]);
+            $tag_id = $pdo->lastInsertId();
+        }
+
+        // ③ PostTag に紐付け（複合PK対応）
+        $stmt = $pdo->prepare(
+            "INSERT IGNORE INTO PostTag (post_id, tag_id)
+             VALUES (:post_id, :tag_id)"
+        );
+        $stmt->execute([
+            ':post_id' => $post_id,
+            ':tag_id'  => $tag_id
+        ]);
+    }
+}
+
 ?>
 
 <!DOCTYPE html>

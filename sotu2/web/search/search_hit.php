@@ -1,5 +1,11 @@
 <?php
 session_start();
+if(!isset($_SESSION['user_id'])){
+    header("Location: ../login/login.php");
+    exit;
+}
+
+require_once '../login/config.php';
 
 // ★ 追加（開発中だけでOK）
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
@@ -111,6 +117,73 @@ main{max-width:800px;margin:40px auto;padding:0 16px;}
 
 hr{
     margin-bottom: 20px;
+}
+
+.back-wrap{
+    display: flex;
+    justify-content: center;
+    margin: 30px 0 10px;
+}
+
+.back-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 10px 20px;
+    border-radius: 999px;
+
+    background: #fff;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover{
+    background: #333;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+/* ===== 空状態（投稿なし） ===== */
+.empty-state{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+
+    margin:80px auto;
+    padding:40px 24px;
+    max-width:420px;
+
+    background:#fff;
+    border-radius:20px;
+    text-align:center;
+}
+
+.empty-icon{
+    font-size:48px;
+    line-height:1;
+}
+
+.empty-state h2{
+    font-size:18px;
+    font-weight:600;
+    color:#333;
+}
+
+.empty-state p{
+    font-size:14px;
+    color:#666;
+    line-height:1.6;
 }
 
 @media (max-width: 768px) { .post-list { grid-template-columns: repeat(2, 1fr); } }
@@ -282,7 +355,7 @@ hr{
 </header>
 <main>
     <!-- 検索フォーム -->
-    <form method="get" action="search_control.php" class="text_kwd">
+    <form method="get" action="search_hit.php" class="text_kwd">
         <input type="text" name="keyword" size="25" placeholder="キーワード検索" value="<?= htmlspecialchars($keyword) ?>">
         <button type="submit" style="all:unset;position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;">
             <img src="../search/img/search_edge.PNG" alt="search" class="search_btn">
@@ -290,6 +363,12 @@ hr{
     </form>
 
     <hr>
+
+    <div class="back-wrap">
+        <a href="search.php" class="back-btn">
+            ← 検索に戻る
+        </a>
+    </div>
 
 <?php if($posts): ?>
 <div class="post-list">
@@ -342,11 +421,15 @@ hr{
 <?php endforeach; ?>
 </div>
 <?php else: ?>
-    <p>おすすめ投稿はありません。</p>
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h2>投稿が見つかりません</h2>
+        <p>
+            条件に合う投稿がありません。<br>
+            キーワードを変えて検索してみてください。
+        </p>
+    </div>
 <?php endif; ?>
-
-
-    <a href="search.php">← 検索に戻る</a>
 
 <!-- 投稿モーダル -->
 <div id="postModal" class="modal">
