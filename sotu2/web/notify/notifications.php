@@ -37,7 +37,7 @@ body {
 
 /* ===== 通知エリア ===== */
 .notify-wrapper {
-    max-width: 480px;
+    max-width: 600px;
     margin: 0 auto;
     padding: 30px 15px 60px;
     position: relative;
@@ -46,11 +46,11 @@ body {
 /* ===== 串刺し縦線 ===== */
 .timeline-line {
     position: absolute;
-    left: 28px;
+    left: 40px;
     top: 0;
     bottom: 0;
     width: 3px;
-    background: #bbb;
+    background: #a3a3a3ff;
     z-index: 1;
 }
 
@@ -61,13 +61,13 @@ body {
 
 /* ===== 通知カード ===== */
 .notify-box {
-    margin-left: 14px;     /* 線に少し刺さる */
+    margin-left: 10px;     /* 線に少し刺さる */
     padding: 14px 16px;
-    background: #fff;
+    background: #d8d8d8ff;
     border-radius: 16px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 20px;
     position: relative;
     z-index: 2;
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
@@ -132,10 +132,11 @@ function loadNotifications() {
             }
 
             list.forEach(n => {
-                const actionIcon = getActionIcon(n.type);
+                const actionIcon = getActionIcon(n.type); 
                 const userIcon = n.profile_img
-                    ? `../assets/user/${n.profile_img}`
-                    : `../assets/user/default.png`;
+                    ? `../profile/u_icon/${n.profile_img}`
+                    : `../profile/u_icon/default.png`;
+
 
                 const div = document.createElement("div");
                 div.className = "notify-block";
@@ -164,10 +165,10 @@ function loadNotifications() {
 
 /* ===== アクション別アイコン ===== */
 function getActionIcon(type) {
-    if (type === "like") return "../assets/icons/like.png";
-    if (type === "follow") return "../assets/icons/follow.png";
-    if (type === "comment") return "../assets/icons/comment.png";
-    return "../assets/icons/like.png";
+    if (type === "like") return "./img/like_2.PNG";
+    if (type === "follow") return "./img/default.PNG";
+    if (type === "comment") return "./img/comment.PNG";
+    return "./img/message.PNG";
 }
 
 function renderMessage(type) {

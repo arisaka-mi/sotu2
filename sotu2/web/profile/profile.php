@@ -45,10 +45,12 @@ if ($logged_in_user_id != $profile_user_id) {
 }
 
 // プロフィール画像
-$img_path = $user['pro_img'] ?? 'u_img/default.png';
-if (!file_exists(__DIR__ . '/' . $img_path) || empty($user['pro_img'])) {
-    $img_path = 'u_img/default.png';
+if (!empty($user['pro_img']) && file_exists(__DIR__ . '/u_icon/' . $user['pro_img'])) {
+    $img_path = 'u_icon/' . $user['pro_img'];
+} else {
+    $img_path = 'u_icon/default.png';
 }
+
 
 // 表示用
 $u_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
