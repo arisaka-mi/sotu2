@@ -14,7 +14,7 @@ if (!isset($_SESSION['user_id'])) {
 <style>
 body {
     margin: 0;
-    background: #f5f5f5;
+    background: #fff;
     font-family: "Helvetica", "Arial", sans-serif;
 }
 
@@ -63,7 +63,11 @@ body {
 .notify-box {
     margin-left: 10px;     /* 線に少し刺さる */
     padding: 14px 16px;
-    background: #d8d8d8ff;
+    background: linear-gradient(
+        135deg,
+        #FFdddd 0%,
+        #FFf7d4 100%
+    );
     border-radius: 16px;
     display: flex;
     align-items: center;
@@ -134,8 +138,9 @@ function loadNotifications() {
             list.forEach(n => {
                 const actionIcon = getActionIcon(n.type); 
                 const userIcon = n.profile_img
-                    ? `../profile/u_icon/${n.profile_img}`
-                    : `../profile/u_icon/default.png`;
+                    ? `../profile/u_img/${n.profile_img}`
+                    : `../profile/u_img/default.png`;
+
 
 
                 const div = document.createElement("div");

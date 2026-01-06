@@ -45,11 +45,12 @@ if ($logged_in_user_id != $profile_user_id) {
 }
 
 // プロフィール画像
-if (!empty($user['pro_img']) && file_exists(__DIR__ . '/u_icon/' . $user['pro_img'])) {
-    $img_path = 'u_icon/' . $user['pro_img'];
+if (!empty($user['pro_img']) && file_exists(__DIR__ . '/u_img/' . $user['pro_img'])) {
+    $img_path = 'u_img/' . $user['pro_img'];
 } else {
-    $img_path = 'u_icon/default.png';
+    $img_path = 'u_img/default.png';
 }
+
 
 
 // 表示用
@@ -146,7 +147,6 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .btn {
             display: inline-block;
             padding: 10px 20px;
-            margin-right: 10px;
             background: #c6c6c6ff;
             color: #fff;
             text-decoration: none;
@@ -156,6 +156,20 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             outline: none;
             cursor: pointer;
         }
+
+        /* プロフィール編集・診断ボタン用 */
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .profile-actions .btn {
+            width: 180px;
+            margin-right: 0;
+        }
+
+
         .btn:hover { 
             background: #b5b5b5; 
         }
@@ -190,23 +204,66 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         /* 既存のスタイルの下に追加 */
-        .post-img {
-            max-width: 100%;     /* 親コンテナの幅を超えない */
-            height: auto;        /* アスペクト比を維持 */
-            border-radius: 10px; /* 角を丸くしたい場合 */
-            margin-bottom: 10px; /* 投稿との間隔 */
-        }
+.post-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 
-        .post {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 15px;
-            margin-top: 45px; 
-            border-radius: 10px;
-            background-color: #fafafa;
-        }
-
-
+.post{
+    aspect-ratio:3/4;
+    background:#fff;
+    border:1px solid #ccc;
+    border-radius:12px;
+    padding:10px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    transition:.2s;
+}
+.post:hover{
+    transform:translateY(-4px);
+    box-shadow:0 6px 16px rgba(0,0,0,.15);
+}
+/* 画像 */
+.post img{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    border-radius:8px;
+    margin-bottom:8px;
+    flex-shrink:0;
+}
+/* ===== テキストエリア ===== */
+.post-body{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    overflow:hidden;
+}
+.post-text{
+    font-size:14px;
+    line-height:1.6;
+    font-weight:500;
+    margin-bottom:4px;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+    flex-shrink:0;
+}
+.post small{
+    font-size:12px;
+    color:#666;
+    flex-shrink:0;
+}
+.post p{
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:6px;
+    display:-webkit-box;
+    -webkit-line-clamp:2;   /* ← 3 → 2 に */
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
     </style>
 </head>
 <body>
@@ -256,31 +313,35 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- 自分のプロフィールのときだけ表示 -->
         <?php if ($logged_in_user_id == $profile_user_id): ?>
-            <a href="profile_setting.php" class="btn">プロフィール編集</a>
-            <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
+            <div class="profile-actions">
+                <a href="profile_setting.php" class="btn">プロフィール編集</a>
+                <a href="../diagnosis/diagnosis_form.php" class="btn">診断画面へ</a>
+            </div>
         <?php endif; ?>
 
+    </div>
         <!-- 投稿一覧 -->
-        <div class="posts-container">
+        <div class="post-list">
             <?php if (count($posts) > 0): ?>
                 <?php foreach ($posts as $post): ?>
                     <div class="post">
                         <?php if (!empty($post['media_url'])): ?>
                             <img src="<?= htmlspecialchars($post['media_url'], ENT_QUOTES) ?>" alt="投稿画像" class="post-img">
                         <?php endif; ?>
-                        <p><?= nl2br(htmlspecialchars($post['content_text'], ENT_QUOTES)) ?></p>
+                        <div class="post-body">
+                        <p class="post-text"><?= nl2br(htmlspecialchars($post['content_text'], ENT_QUOTES)) ?></p>
                         <small>
                             投稿日: <?= htmlspecialchars($post['created_at']) ?>
                             <span class="like-count"> <img src="img/like_2.png" alt="ハート" style="width:20px; "> <?= $post['like_count'] ?></span>
                             <span class="comment-count"> <img src="img/comment.png" alt="コメント" style="width:23px; "> <?= $post['comment_count'] ?></span>
                         </small>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
                 <p>まだ投稿はありません。</p>
             <?php endif; ?>
         </div>
-    </div>
 </main>
 </body>
 </html>

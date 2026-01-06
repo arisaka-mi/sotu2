@@ -4,17 +4,25 @@ require_once('../login/config.php');
 
 $logged_in_user_id = $_SESSION['user_id'] ?? null;
 $user_name = '';
-$user_icon = 'u_img/default.png';
+$user_icon = '../profile/u_img/default.png';
+$cache_buster = time(); // ← 追加
 
 if ($logged_in_user_id) {
     $stmt = $pdo->prepare("SELECT u_name, pro_img FROM User WHERE user_id = :id");
     $stmt->execute([':id' => $logged_in_user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
     if ($user) {
         $user_name = htmlspecialchars($user['u_name'], ENT_QUOTES, 'UTF-8');
-        $user_icon = $user['pro_img'] ?: 'u_img/default.png';
+
+        if (!empty($user['pro_img']) && file_exists(__DIR__ . '/../profile/u_img/' . $user['pro_img'])) {
+            $user_icon = '../profile/u_img/' . $user['pro_img'];
+            $cache_buster = filemtime(__DIR__ . '/../profile/u_img/' . $user['pro_img']);
+        }
     }
 }
+
+
 ?>
 
 <header class="global-nav" id="sidebar">
@@ -57,7 +65,9 @@ if ($logged_in_user_id) {
 
         <?php if ($logged_in_user_id): ?>
             <div class="user-info">
-                <img src="../profile/<?= htmlspecialchars($user_icon) ?>" alt="アイコン" class="user-icon">
+                <img src="<?= htmlspecialchars($user_icon) ?>?v=<?= $cache_buster ?>"
+                    alt="アイコン"
+                    class="user-icon">
                 <span class="user-name"><?= $user_name ?></span>
             </div>
         <?php endif; ?>

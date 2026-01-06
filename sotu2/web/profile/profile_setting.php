@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$error) {
 
             // 保存先（統一）
-            $upload_dir = __DIR__ . '/u_icon/';
+            $upload_dir = __DIR__ . '/u_img/';
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
@@ -170,11 +170,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /* =========================
    表示用画像パス
 ========================= */
-if (!empty($user['pro_img']) && file_exists(__DIR__ . '/u_icon/' . $user['pro_img'])) {
-    $img_path = 'u_icon/' . $user['pro_img'];
+if (!empty($user['pro_img']) && file_exists(__DIR__ . '/u_img/' . $user['pro_img'])) {
+    $img_path = 'u_img/' . $user['pro_img'];
 } else {
-    $img_path = 'u_icon/default.png';
+    $img_path = 'u_img/default.png';
 }
+
 
 $u_name     = htmlspecialchars($user['u_name'], ENT_QUOTES);
 $u_name_id  = htmlspecialchars($user['u_name_id'], ENT_QUOTES);
