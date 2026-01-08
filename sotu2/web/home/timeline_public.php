@@ -10,6 +10,16 @@ if (!isset($_SESSION['user_id'])) {
 require_once('../login/config.php');
 $user_id = $_SESSION['user_id'] ?? null;
 
+function getProfileImg($filename) {
+    $baseDir = __DIR__ . '/../profile/u_img/';
+    if (!empty($filename) && file_exists($baseDir . $filename)) {
+        return '../profile/u_img/' . $filename;
+    } else {
+        return '../profile/u_img/default.png';
+    }
+}
+
+
 try {
     // ★ おすすめユーザー取得
     $recommend_sql = "
@@ -95,7 +105,7 @@ function render_comments($comments, $level = 0) {
     foreach ($comments as $c) {
         echo '<div style="margin-left:' . ($level*20) . 'px; border-left:1px solid #ccc; padding-left:5px; margin-top:10px;">';
 
-        $icon = "../profile/" . ($c['pro_img'] ?: "u_icon/default.png");
+        $icon = getProfileImg($c['pro_img']);
 
         echo '<div style="display:flex; align-items:center; gap:8px;">';
         echo '<img src="'. htmlspecialchars($icon) .'" style="width:30px; height:30px; border-radius:50%;">';
@@ -500,7 +510,7 @@ main {
         <h2>おすすめユーザー</h2>
         <div class="recommend-users">
             <?php foreach ($recommend_users as $u): ?>
-                <?php $icon = "../profile/" . ($u['pro_img'] ?: "u_icon/default.png"); ?>
+                <?php $icon = getProfileImg($u['pro_img']); ?>
                 <a href="../profile/profile.php?user_id=<?= htmlspecialchars($u['user_id']) ?>"
                 class="recommend-user">
                     <img src="<?= htmlspecialchars($icon) ?>">
@@ -523,7 +533,7 @@ main {
     <?php else: ?>
     <div class="post-list">
     <?php foreach ($posts as $post): ?>
-        <?php $icon_path = "../profile/" . ($post['pro_img'] ?: "u_icon/default.png"); ?>
+        <?php $icon_path = getProfileImg($post['pro_img']); ?>
 
     <div class="post" data-post-id="<?= $post['post_id'] ?>">
 

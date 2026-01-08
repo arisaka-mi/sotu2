@@ -162,7 +162,7 @@ p.lead {
 
       <a href="body_type.php" class="menu-btn bone">骨格診断</a>
       <a href="parsonal_color.php" class="menu-btn color">パーソナルカラー診断</a>
-      <a href="../profile/profile_setting.php">もどる</a>
+      <a href="../profile/profile.php">もどる</a>
   </div>
 
 </div>

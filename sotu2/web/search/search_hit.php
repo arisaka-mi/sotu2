@@ -7,6 +7,15 @@ if(!isset($_SESSION['user_id'])){
 
 require_once '../login/config.php';
 
+function getProfileImg($filename) {
+    $baseDir = __DIR__ . '/../profile/u_img/';
+    if (!empty($filename) && file_exists($baseDir . $filename)) {
+        return '../profile/u_img/' . $filename;
+    } else {
+        return '../profile/u_img/default.png';
+    }
+}
+
 // ★ 追加（開発中だけでOK）
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set('display_errors', 1);
@@ -379,9 +388,7 @@ hr{
         : '';
 
     // ユーザーアイコン
-    $userImg = !empty($post['pro_img'])
-        ? '../profile/' . $post['pro_img']
-        : '../profile/u_icon/default.png';
+    $userImg = getProfileImg($post['pro_img']);
 
     $tags = [];
     if (!empty($post['tags'])) {
@@ -394,6 +401,7 @@ hr{
     data-text="<?= htmlspecialchars($post['content_text'], ENT_QUOTES) ?>"
     data-date="投稿日: <?= htmlspecialchars($post['created_at'], ENT_QUOTES) ?>"
     data-user="<?= htmlspecialchars($post['u_name'], ENT_QUOTES) ?>"
+    <?php $userImg = getProfileImg($post['pro_img']); ?>
     data-user-img="<?= htmlspecialchars($userImg, ENT_QUOTES) ?>"
     data-likes="<?= (int)($post['like_count'] ?? 0) ?>"
     data-comments="<?= (int)($post['comment_count'] ?? 0) ?>"
@@ -482,8 +490,17 @@ hr{
 </div>
 
 <script>
+/* ===============================
+   グローバル変数
+================================ */
+let currentPostId = null;
+
+/* ===============================
+   DOM取得
+================================ */
 const modal = document.getElementById('postModal');
 const commentModal = document.getElementById('commentModal');
+
 const modalImg = document.getElementById('modalImg');
 const modalText = document.getElementById('modalText');
 const modalDate = document.getElementById('modalDate');
@@ -491,61 +508,50 @@ const modalUser = document.getElementById('modalUser');
 const modalUserImg = document.getElementById('modalUserImg');
 const modalLikes = document.getElementById('modalLikes');
 const modalCommentsCount = document.getElementById('modalCommentsCount');
+
 const likeBtn = document.getElementById('likeBtn');
 const likeIcon = document.getElementById('likeIcon');
-const closeBtn = document.querySelector('.modal-close');
+
 const openCommentBtn = document.getElementById('openCommentBtn');
+const closeBtn = document.querySelector('.modal-close');
 
 const commentList = document.getElementById('modalCommentsArea');
 const commentForm = document.getElementById('commentForm');
 const commentPostId = document.getElementById('modalPostIdComment');
+const modalPostIdLike = document.getElementById('modalPostIdLike');
+
 const commentTextarea = document.getElementById('commentTextarea');
 const parentCmtId = document.getElementById('parentCmtId');
-const cancelReplyBtn = document.getElementById('cancelReplyBtn');
 
 const modalTags = document.getElementById('modalTags');
 
-// 投稿クリックでモーダル表示
-document.querySelectorAll('.post').forEach(p=>{
-    p.addEventListener('click',()=>{
+/* ===============================
+   投稿クリック → モーダル表示
+================================ */
+document.querySelectorAll('.post').forEach(post => {
+    post.addEventListener('click', () => {
 
-        let currentPostId = p.dataset.postId;
+        currentPostId = post.dataset.postId;
 
-        modalImg.src = p.dataset.img;
-        modalText.textContent = p.dataset.text;
-        modalDate.textContent = p.dataset.date;
-        modalUser.textContent = p.dataset.user;
-        modalLikes.textContent = p.dataset.likes;
-        modalCommentsCount.textContent = p.dataset.comments;
+        modalPostIdLike.value = currentPostId;
         commentPostId.value = currentPostId;
-        modalUserImg.src = p.dataset.userImg;
 
+        modalImg.src = post.dataset.img || '';
+        modalText.textContent = post.dataset.text;
+        modalDate.textContent = post.dataset.date;
+        modalUser.textContent = post.dataset.user;
+        modalUserImg.src = post.dataset.userImg;
 
-        if (p.dataset.img) {
-            modalImg.src = p.dataset.img;
-            modalImg.style.display = 'block';
-        } else {
-            modalImg.style.display = 'none';
-        }
+        modalLikes.textContent = post.dataset.likes;
+        modalCommentsCount.textContent = post.dataset.comments;
 
-        p.addEventListener('click',()=>{
+        // 画像なし対策
+        modalImg.style.display = post.dataset.img ? 'block' : 'none';
 
-            modalImg.src = p.dataset.img;
-            modalText.textContent = p.dataset.text;
-            modalDate.textContent = p.dataset.date;
-            modalUser.textContent = p.dataset.user;
-            modalUserImg.src = p.dataset.userImg;   // ← 追加
-            modalLikes.textContent = p.dataset.likes;
-            modalCommentsCount.textContent = p.dataset.comments;
-
-            modal.style.display = 'flex';
-        });
-
-
-        // ✅ タグ表示（ここが正しい）
+        // タグ
         modalTags.innerHTML = '';
-        if(p.dataset.tags){
-            p.dataset.tags.split(',').forEach(tag=>{
+        if(post.dataset.tags){
+            post.dataset.tags.split(',').forEach(tag=>{
                 const span = document.createElement('span');
                 span.className = 'tag';
                 span.textContent = '#' + tag;
@@ -556,158 +562,156 @@ document.querySelectorAll('.post').forEach(p=>{
         modal.style.display = 'flex';
     });
 });
-document.querySelectorAll('.tag').forEach(tag=>{
-    tag.addEventListener('click', e=>{
-        e.stopPropagation(); // モーダル開かない
-        const name = tag.dataset.tag;
-        location.href = `search_control.php?keyword=${encodeURIComponent(name)}`;
-    });
-});
 
+/* ===============================
+   いいね処理
+================================ */
+likeBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    if(!currentPostId) return;
 
-document.querySelectorAll('.like-btn').forEach(likeBtn => {
-    likeBtn.addEventListener('click', async () => {
-        const likeIcon = likeBtn.querySelector('.like-icon');
-        const modalLikes = likeBtn.nextElementSibling; // <span> like数
-        const postId = likeBtn.dataset.postId;
+    const formData = new FormData();
+    formData.append('post_id', currentPostId);
 
-        try {
-            const formData = new FormData();
-            formData.append('post_id', postId);
+    try{
+        const res = await fetch('../home/toggle_like.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
 
-            const res = await fetch('../home/toggle_like.php', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-
-            if(data.status !== 'ok'){
-                alert('いいね処理に失敗しました: ' + (data.message||''));
-                return;
-            }
-
-            // いいねの見た目切り替え
-            if(data.liked){
-                likeIcon.src = "../home/img/like_edge_2.PNG"; // ❤️
-                likeIcon.dataset.liked = "1";
-            } else {
-                likeIcon.src = "../home/img/like_edge.PNG"; // 🤍
-                likeIcon.dataset.liked = "0";
-            }
-
-            // いいね数更新
-            modalLikes.textContent = data.like_count;
-
-        } catch(e){
-            console.error(e);
-            alert('通信エラーが発生しました');
+        if(data.status !== 'ok'){
+            alert('いいね失敗');
+            return;
         }
-    });
-});
 
+        // モーダル更新
+        modalLikes.textContent = data.like_count;
+        likeIcon.src = data.liked
+            ? '../search/img/like_edge_2.PNG'
+            : '../search/img/like_edge.PNG';
 
+        // ★ 一覧側 dataset も同期（search.php と同じ）
+        const postEl = document.querySelector(
+            `.post[data-post-id="${currentPostId}"]`
+        );
+        if(postEl){
+            postEl.dataset.likes = data.like_count;
+        }
 
-// 投稿モーダル閉じる
-closeBtn.addEventListener('click', () => {
-    modal.style.display = 'none';
-    commentModal.style.display = 'none'; // 追加：コメントモーダルも閉じる
-});
-
-modal.addEventListener('click', e => {
-    if(e.target === modal){
-        modal.style.display = 'none';
-        commentModal.style.display = 'none'; // 追加：コメントモーダルも閉じる
-    }
-});
-
-document.addEventListener('keydown', e => {
-    if(e.key === 'Escape'){
-        modal.style.display = 'none';
-        commentModal.style.display = 'none'; // 追加：コメントモーダルも閉じる
+    }catch(err){
+        console.error(err);
+        alert('通信エラー');
     }
 });
 
 
-// コメントモーダル表示
-openCommentBtn.addEventListener('click',()=>{
-    commentModal.style.display='flex';
+/* ===============================
+   コメントモーダル表示
+================================ */
+openCommentBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    if(!currentPostId) return;
+
+    commentModal.style.display = 'flex';
     loadComments(currentPostId);
 });
 
-// コメント取得
+/* ===============================
+   コメント取得
+================================ */
 function loadComments(postId){
     fetch(`../home/add_comment.php?post_id=${postId}`)
-    .then(res=>res.text())
-    .then(html=>{
-        commentList.innerHTML = html;
-        attachReplyButtons();
-    }).catch(()=>commentList.textContent='コメント取得失敗');
+        .then(res => res.text())
+        .then(html => {
+            commentList.innerHTML = html;
+            attachReplyButtons();
+        })
+        .catch(()=> commentList.textContent = 'コメント取得失敗');
 }
 
-// 親コメント返信
+/* ===============================
+   返信ボタン
+================================ */
 function attachReplyButtons(){
     document.querySelectorAll('.reply-btn').forEach(btn=>{
         btn.onclick = () => {
             parentCmtId.value = btn.dataset.parentId;
 
-            // 名前表示
-            document.getElementById('replyToName').textContent = btn.dataset.userName;
+            document.getElementById('replyToName').textContent = btn.dataset.parentUser;
             document.getElementById('replyInfo').style.display = 'flex';
 
-            // 対象コメントをハイライト
-            document.querySelectorAll('.comment-item')
-                .forEach(c => c.classList.remove('reply-target'));
-            btn.closest('.comment-item').classList.add('reply-target');
-
-            commentTextarea.placeholder = `@${btn.dataset.userName} に返信`;
+            commentTextarea.placeholder = `@${btn.dataset.parentUser} に返信`;
             commentTextarea.focus();
         }
     });
 }
 
-// 返信キャンセル
-function cancelReply() {
-    parentCmtId.value = '';
-    commentTextarea.placeholder = 'コメントを書く...';
-
-    document.getElementById('replyInfo').style.display = 'none';
-    document.querySelectorAll('.comment-item')
-        .forEach(c => c.classList.remove('reply-target'));
-
-    commentTextarea.focus();
-}
-
-cancelReplyBtn.onclick = cancelReply;
-document.getElementById('cancelReplyTop').onclick = cancelReply;
-
-
-// コメント送信
-commentForm.addEventListener('submit',e=>{
+/* ===============================
+   コメント送信
+================================ */
+commentForm.addEventListener('submit', e=>{
     e.preventDefault();
+
     const comment = commentTextarea.value.trim();
-    if(!comment) return;
+    if(!comment || !currentPostId) return;
 
     const data = new URLSearchParams();
-    data.append('post_id', commentPostId.value);
+    data.append('post_id', currentPostId);
     data.append('comment', comment);
-    if(parentCmtId.value) data.append('parent_cmt_id', parentCmtId.value);
+    if(parentCmtId.value){
+        data.append('parent_cmt_id', parentCmtId.value);
+    }
 
-    fetch('../home/add_comment.php',{method:'POST',body:data})
-    .then(()=>{
-        commentTextarea.value='';
-        parentCmtId.value='';
-        commentTextarea.placeholder='コメントを書く...';
-        cancelReplyBtn.style.display='none';
-        loadComments(commentPostId.value);
-        modalCommentsCount.textContent=Number(modalCommentsCount.textContent)+1;
-    }).catch(()=>alert('コメント送信失敗'));
+    fetch('../home/add_comment.php', {
+        method: 'POST',
+        body: data
+    }).then(()=>{
+
+        commentTextarea.value = '';
+        parentCmtId.value = '';
+        document.getElementById('replyInfo').style.display = 'none';
+
+        loadComments(currentPostId);
+
+        // モーダル更新
+        const newCount = Number(modalCommentsCount.textContent) + 1;
+        modalCommentsCount.textContent = newCount;
+
+        // ★ 一覧側 dataset 同期（重要）
+        const postEl = document.querySelector(
+            `.post[data-post-id="${currentPostId}"]`
+        );
+        if(postEl){
+            postEl.dataset.comments = newCount;
+        }
+    });
 });
 
-// Enter送信
-commentTextarea.addEventListener('keydown',e=>{
-    if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); commentForm.requestSubmit(); }
+
+/* ===============================
+   モーダル閉じる
+================================ */
+closeBtn.addEventListener('click', ()=>{
+    modal.style.display = 'none';
+    commentModal.style.display = 'none';
+});
+
+modal.addEventListener('click', e=>{
+    if(e.target === modal){
+        modal.style.display = 'none';
+        commentModal.style.display = 'none';
+    }
+});
+
+document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape'){
+        modal.style.display = 'none';
+        commentModal.style.display = 'none';
+    }
 });
 </script>
+
 </main>
 </body>
 </html>

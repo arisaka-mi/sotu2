@@ -2,6 +2,15 @@
 session_start();
 require_once '../login/config.php';
 
+function getProfileImg($filename) {
+    $baseDir = __DIR__ . '/../profile/u_img/';
+    if (!empty($filename) && file_exists($baseDir . $filename)) {
+        return '../profile/u_img/' . $filename;
+    } else {
+        return '../profile/u_img/default.png';
+    }
+}
+
 /* ===============================
    コメント一覧取得（GET）
 ================================ */
@@ -34,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     function render_comments($parent_id, $tree) {
         if (!isset($tree[$parent_id])) return;
         foreach ($tree[$parent_id] as $cmt) {
-            $icon = '../profile/' . ($cmt['pro_img'] ?: 'u_icon/default.png');
+            $icon = getProfileImg($cmt['pro_img']);
             $isReply = $cmt['parent_cmt_id'] ? ' comment-reply' : '';
             echo '<div class="comment-item'.$isReply.'" style="margin-left:' . ($cmt['parent_cmt_id'] ? '30px' : '0') . '">';
             echo '  <img src="' . htmlspecialchars($icon) . '" class="comment-user-icon">';

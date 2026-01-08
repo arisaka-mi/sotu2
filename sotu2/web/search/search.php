@@ -7,6 +7,15 @@ if(!isset($_SESSION['user_id'])){
 
 require_once '../login/config.php';
 
+function getProfileImg($filename) {
+    $baseDir = __DIR__ . '/../profile/u_img/';
+    if (!empty($filename) && file_exists($baseDir . $filename)) {
+        return '../profile/u_img/' . $filename;
+    } else {
+        return '../profile/u_img/default.png';
+    }
+}
+
 // 検索キーワード
 $raw = trim($_GET['keyword'] ?? '');
 $keyword = $raw;
@@ -492,7 +501,8 @@ hr{
     data-text="<?= htmlspecialchars($post['content_text']) ?>"
     data-date="投稿日: <?= htmlspecialchars($post['created_at']) ?>"
     data-user="<?= htmlspecialchars($post['u_name']) ?>"
-    data-user-img="<?= htmlspecialchars('../profile/'.($post['pro_img']?:'u_icon/default.png')) ?>"
+    <?php $userIcon = getProfileImg($post['pro_img']); ?>
+    data-user-img="<?= htmlspecialchars($userIcon, ENT_QUOTES) ?>"
     data-likes="<?= $post['like_count'] ?>"
     data-liked="<?= $post['is_liked'] ? 1 : 0 ?>"
     data-comments="<?= $post['comment_count'] ?>"
