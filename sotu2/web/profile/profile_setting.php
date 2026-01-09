@@ -188,66 +188,191 @@ $height     = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
 <head>
     <meta charset="UTF-8">
     <title>プロフィール編集</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin:0;
-            padding:0;
-        }
-        main {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 16px;
-        }
-        .container {
-            max-width:500px;
-            margin:50px auto;
-            padding:20px;
-            border-radius:10px;
-        }
-        .form-group {
-            margin-bottom:15px;
-        }
-        label {
-            display:block;
-            margin-bottom:5px;
-            font-weight:bold;
-        }
-        input[type="text"], textarea {
-            width:100%;
-            padding:8px;
-            box-sizing:border-box;
-        }
-        input[type="file"] {
-            padding:5px;
-        }
-        .profile-icon {
-            display:block;
-            margin:0 auto 15px;
-            width:100px;
-            height:100px;
-            border-radius:50%;
-            object-fit:cover;
-            border:1px solid #ebebeb;
-        }
-        .btn {
-            display:inline-block;
-            padding:10px 20px;
-            background:#007bff;
-            color:#fff;
-            border-radius:5px;
-            text-decoration:none;
-            border:none;
-            cursor:pointer;
-        }
-        .btn:hover {
-            background:#0056b3;
-        }
-        .error {
-            color:red;
-            margin-bottom:15px;
-        }
-    </style>
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    background: #fff;
+}
+
+.container {
+    max-width: 520px;
+    margin: 40px auto;
+    padding: 0 16px;
+}
+
+/* プロフィール画像 */
+.profile-icon {
+    display: block;
+    margin: 0 auto 30px;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+/* セクション見出し */
+.section-title {
+    margin: 40px 0 20px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* 横並び・下線 */
+.row-line {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 26px;
+}
+
+.row-line label {
+    width: 120px;
+    font-size: 14px;
+    color: #555;
+}
+
+.row-line input,
+.row-line textarea {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 6px 4px;
+    font-size: 15px;
+    background: transparent;
+}
+
+.row-line textarea {
+    resize: none;
+    min-height: 36px;
+}
+
+.row-line input:focus,
+.row-line textarea:focus {
+    outline: none;
+    border-bottom-color: #ff6b6b;
+}
+
+/* 固定情報行 */
+.static-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    font-size: 14px;
+}
+
+.static-row span:first-child {
+    width: 120px;
+    color: #555;
+}
+
+.static-row a {
+    font-size: 12px;
+    color: #ff6b6b;
+    text-decoration: none;
+}
+
+/* ボタン */
+.btn-area {
+    margin-top: 40px;
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 24px;
+    text-align: center;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn.primary {
+    background: #ff6b6b;
+    color: #fff;
+}
+
+.btn.cancel {
+    background: #eee;
+    color: #333;
+}
+
+/* エラー */
+.error {
+    color: #ff4d4d;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+/* ===== アバター＋ボタン ===== */
+.avatar-wrapper {
+    position: relative;
+    width: 120px;
+    margin: 0 auto 40px;
+}
+
+.avatar-wrapper .profile-icon {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+/* ＋マーク */
+.avatar-plus {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 32px;
+    height: 32px;
+    background: #ff6b6b;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 600;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,.15);
+}
+
+.avatar-plus input {
+    display: none;
+}
+
+.avatar-plus:hover {
+    background: #ff4d4d;
+}
+
+.logout {
+    color: #F67979;
+    text-decoration: none;   /* デフォルト下線なし */
+    font-size: 14px;
+    font-weight: 500;
+    transition: none;
+}
+
+/* hover時だけ下線 */
+.logout:hover {
+    text-decoration: underline;
+}
+
+/* クリック・訪問後も色を変えない（保険） */
+.logout:link,
+.logout:visited,
+.logout:hover,
+.logout:active {
+    color: #F67979;
+}
+
+  
+</style>
 </head>
 <body>
 <main>
@@ -259,49 +384,63 @@ $height     = htmlspecialchars($user['height'] ?? '', ENT_QUOTES);
 
 <form action="" method="post" enctype="multipart/form-data">
 
-    <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" class="profile-icon">
+    <div class="avatar-wrapper">
+        <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" class="profile-icon">
 
-    <div class="form-group">
-        <label for="pro_img">プロフィール画像</label>
-        <input type="file" name="pro_img" id="pro_img" accept="image/*">
+        <label class="avatar-plus">
+            +
+            <input type="file" name="pro_img" accept="image/*">
+        </label>
     </div>
 
-    <h1>ユーザー編集</h1>
 
-    <div class="form-group">
-        <label for="u_name">ユーザー名</label>
-        <input type="text" name="u_name" id="u_name" value="<?= $u_name ?>" required>
+    <h2 class="section-title">ユーザー情報</h2>
+
+    <div class="row-line">
+        <label>ユーザー名</label>
+        <input type="text" name="u_name" value="<?= $u_name ?>" required>
     </div>
 
-    <div class="form-group">
-        <label for="u_name_id">ユーザーID</label>
-        <input type="text" name="u_name_id" id="u_name_id" value="<?= $u_name_id ?>" required>
+    <div class="row-line">
+        <label>ユーザーID</label>
+        <input type="text" name="u_name_id" value="<?= $u_name_id ?>" required>
     </div>
 
-    <div class="form-group">
-        <label for="u_text">自己紹介</label>
-        <textarea name="u_text" id="u_text" rows="5"><?= $u_text ?></textarea>
+    <div class="row-line">
+        <label>自己紹介</label>
+        <textarea name="u_text"><?= $u_text ?></textarea>
     </div>
 
-    <h1>あなたのタイプ</h1>
+    <h2 class="section-title">あなたのタイプ</h2>
 
-    <div class="form-group">
-        <label for="height">身長</label>
-        <input type="text" name="height" id="height" value="<?= $height ?>" required>
+    <div class="row-line">
+        <label>身長</label>
+        <input type="text" name="height" value="<?= $height ?>">
     </div>
 
-    <p>骨格: <?= htmlspecialchars($user['bt_name'] ?? '未設定', ENT_QUOTES) ?></p>
-    <a href="../diagnosis/body_detail.php">詳しく見る</a>
+    <div class="static-row">
+        <span>骨格</span>
+        <span><?= htmlspecialchars($user['bt_name'] ?? '未設定', ENT_QUOTES) ?></span>
+        <a href="../diagnosis/body_detail.php">変更</a>
+    </div>
 
-    <p>パーソナルカラー: <?= htmlspecialchars($user['pc_name'] ?? '未設定', ENT_QUOTES) ?></p>
-    <a href="../diagnosis/pc_detail.php">詳しく見る</a>
+    <div class="static-row">
+        <span>パーソナルカラー</span>
+        <span><?= htmlspecialchars($user['pc_name'] ?? '未設定', ENT_QUOTES) ?></span>
+        <a href="../diagnosis/pc_detail.php">変更</a>
+    </div>
 
-    <p><a href="../login/logout.php">ログアウト</a></p>
+    <div class="logout">
+        <p><a href="../login/logout.php">ログアウト</a></p>
+    </div>
 
-    <button type="submit" class="btn">更新する</button>
-    <a href="profile.php" class="btn" style="background:#6c757d;">キャンセル</a>
+    <div class="btn-area">
+        <button type="submit" class="btn primary">更新</button>
+        <a href="profile.php" class="btn cancel">キャンセル</a>
+    </div>
 
 </form>
+
 </div>
 </main>
 </body>

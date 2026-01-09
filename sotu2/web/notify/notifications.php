@@ -61,13 +61,15 @@ body {
 
 /* ===== 通知カード ===== */
 .notify-box {
-    margin-left: 10px;     /* 線に少し刺さる */
+    margin-left: 10px;
     padding: 14px 16px;
     background: linear-gradient(
-        135deg,
-        #FFdddd 0%,
-        #FFf7d4 100%
-    );
+    135deg,
+    #ffffff 0%,
+    #ffffff 40%,
+    #f48fb1 60%,
+    #90caf9 100%
+);
     border-radius: 16px;
     display: flex;
     align-items: center;

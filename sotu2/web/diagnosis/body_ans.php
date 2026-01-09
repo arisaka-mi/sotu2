@@ -1,5 +1,10 @@
 <?php
 session_start();
+require_once('../login/config.php');
+
+if (!isset($_SESSION['user_id'])) {
+    exit('ログインしてください');
+}
 
 // ------------------------
 // スコア取得

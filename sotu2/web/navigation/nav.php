@@ -88,6 +88,7 @@ if ($logged_in_user_id) {
     top: 16px;
     left: 170px;
     z-index: 2000;
+    z-index: 9999;   /* ★ 揃える */
 }
 
 .top-logo img{
@@ -107,6 +108,8 @@ if ($logged_in_user_id) {
     transition: width 0.3s;
     overflow: hidden;
     border-radius: 0 20px 20px 0;  /* 右上・右下を丸く */
+
+    z-index: 9999;   /* ★ 追加：常に最前面 */
 }
 
 /* 折りたたみ状態 */
