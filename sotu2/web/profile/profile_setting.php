@@ -421,13 +421,13 @@ body {
     <div class="static-row">
         <span>骨格</span>
         <span><?= htmlspecialchars($user['bt_name'] ?? '未設定', ENT_QUOTES) ?></span>
-        <a href="../diagnosis/body_detail.php">変更</a>
+        <a href="../diagnosis/body_detail.php">詳細</a>
     </div>
 
     <div class="static-row">
         <span>パーソナルカラー</span>
         <span><?= htmlspecialchars($user['pc_name'] ?? '未設定', ENT_QUOTES) ?></span>
-        <a href="../diagnosis/pc_detail.php">変更</a>
+        <a href="../diagnosis/pc_detail.php">詳細</a>
     </div>
 
     <div class="logout">
