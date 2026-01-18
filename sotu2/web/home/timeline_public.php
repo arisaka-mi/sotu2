@@ -151,28 +151,29 @@ main {
 
 /* 投稿全体 */
 .post-list .post {
-    width: 75%;             /* 親にフィット */
+    width: 75%;
     background: #fff;
     border-radius: 12px;
     padding: 16px;
     box-sizing: border-box;
-    margin: 0 auto; /* 中央寄せ */
+    margin: 0 auto;
+}
+
+/* 画像ラッパーは幅指定しない */
+.post-image-wrapper {
+    width: 100%;
+    margin: 0;
+    position: relative;
 }
 
 /* 投稿画像 */
-.post-image-wrapper {
-    width: 75%; /* 元は100% */
-    margin: 0 auto; /* 中央寄せ */
-    position: relative;
-}
 .post-media {
-    width: 100%;       /* 横幅を親に合わせる */
-    height: auto;      /* 高さは自動で縦横比維持 */
-    object-fit: contain; /* 画像を切り取らずに表示 */
+    width: 100%;
+    height: auto;
     display: block;
     border-radius: 12px;
-    margin: 0 auto; /* 中央寄せ */
 }
+
 
 /* 投稿者情報オーバーレイ */
 .post-user-overlay {
