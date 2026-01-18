@@ -17,11 +17,11 @@
                 height: 100vh;          /* 画面の高さ全体を使う */
                 margin: 0;
                 font-family: sans-serif;
-                background: url('img/gazo.png') no-repeat center center/cover; /* ← 背景画像を設定 */
+                background: url('img/haikei.png') no-repeat center center/cover; /* ← 背景画像を設定 */
             }
 
            main {
-                background-color: rgba(255, 255, 255, 0.15);
+                background-color: rgba(255, 255, 255, 0.35);
                 backdrop-filter: blur(15px);
                 border: 1px solid rgba(255, 255, 255, 0.3);
                 width: 350px;
@@ -64,10 +64,10 @@
             }
 
             form p {
-            text-align: center; /* 中央寄せ */
-            margin-top: 10px;   /* ボタンとの間隔 */
-            margin-bottom: 0;    /* 下の余白をなくす */
-            font-size: 0.9em;   /* リンクの文字サイズを少し小さく */
+                text-align: center;
+                margin-top: 10px;
+                margin-bottom: 0;
+                font-size: 0.9em;
             }
 
             form p a {
@@ -78,6 +78,11 @@
             form p a:hover {
                 text-decoration: underline;
             }
+
+            h1 {
+                color: #ffffff;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+            }
         </style>
     </head>
     <body>
@@ -85,7 +90,7 @@
             <!--グローバルナビ未完成-->
         </header>
         <main>
-            <h1>新規会員登録</h1>
+            <h1>新規登録</h1>
             <form action="register.php" method="post">
                 <!--名前-->
                 <div class="u_name">

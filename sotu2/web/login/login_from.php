@@ -10,7 +10,10 @@
         height: 100vh;
         display: flex;
         font-family: sans-serif;
-        background: url('img/gazo.png') no-repeat center center/cover; /* ← 背景画像を設定 */
+        background-image: url("img/gazo.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
     }
 
     .left, .right {
@@ -110,11 +113,68 @@
             width: 90%;
         }
     }
+
+    /* ===== 雲ベース ===== */
+.clouds {
+    position: fixed;
+    bottom: -10vh;
+    left: 0;
+    width: 100%;
+    height: 40vh;
+    background: #ffffff;
+    border-top-left-radius: 50% 120px;
+    border-top-right-radius: 50% 120px;
+    z-index: -1;
+}
+
+/* ===== 左〜中央 ===== */
+.clouds::before {
+    content: "";
+    position: absolute;
+    top: -20vh;
+    left: -10vw;
+    width: clamp(220px, 22vw, 320px);
+    height: clamp(220px, 22vw, 320px);
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow:
+        15vw 4vh 0 2vw #ffffff,
+        30vw 2vh 0 1.8vw #ffffff,
+        45vw 6vh 0 2.6vw #ffffff,
+        60vw 3vh 0 2vw #ffffff,
+        75vw 7vh 0 2.8vw #ffffff,
+        90vw 4vh 0 2.2vw #ffffff,
+        105vw 6vh 0 3vw #ffffff;
+}
+
+/* ===== 右〜中央 ===== */
+.clouds::after {
+    content: "";
+    position: absolute;
+    top: -22vh;
+    right: -12vw;
+    width: clamp(240px, 24vw, 340px);
+    height: clamp(240px, 24vw, 340px);
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow:
+        -18vw 5vh 0 2vw #ffffff,
+        -34vw 3vh 0 1.6vw #ffffff,
+        -50vw 7vh 0 2.8vw #ffffff,
+        -66vw 4vh 0 2vw #ffffff,
+        -82vw 8vh 0 3vw #ffffff,
+        -98vw 5vh 0 2.4vw #ffffff,
+        -114vw 7vh 0 3.2vw #ffffff;
+}
+
+
+
+
 </style>
 </head>
 <body>
     <div class="left">
-        <img class="logo" src="img/test_sample.jpg" alt="BeautyConnect">
+        <!--<img class="logo" src="img/gazo.png" alt="BeautyConnect">-->
     </div>
     <div class="right">
         <main>
@@ -134,5 +194,6 @@
             </form>
         </main>
     </div>
+    <div class="clouds"></div>
 </body>
 </html>
