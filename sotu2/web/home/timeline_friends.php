@@ -559,6 +559,35 @@ main {
     border-radius: 10px;
     padding: 6px;
 }
+
+.empty-state {
+    grid-column: 1 / -1;   /* ★ 全列を使う */
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    margin: 30px auto;
+    padding: 40px 24px;
+    max-width: 420px;
+
+    background: #fff;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.empty-icon{
+    font-size:48px;
+    line-height:1;
+}
+
+.empty-state h2{
+    font-size:18px;
+    font-weight:600;
+    color:#333;
+}
+
 </style>
 </head>
 
@@ -601,7 +630,10 @@ main {
 
 <!-- ★ 投稿一覧 -->
     <?php if (empty($posts)): ?>
-        <p>投稿はまだありません。</p>
+        <div class="empty-state">
+            <div class="empty-icon">😭</div>
+            <h2>まだ投稿がありません</h2>
+        </div>
     <?php else: ?>
     <div class="post-list">
     <?php foreach ($posts as $post): ?>
