@@ -489,11 +489,40 @@ hr{
 <?php if($posts): ?>
 <div class="post-list">
 <?php foreach($posts as $post):
+    // サーバー用パス
+    $img_path = !empty($post['media_url']) ? __DIR__ . '/../home/' . $post['media_url'] : '';
+
+    // ブラウザ用パス
     $img_url = !empty($post['media_url']) ? '../home/' . $post['media_url'] : '';
+
     $tags = [];
     if (!empty($post['tags'])) {
         $tags = explode(',', $post['tags']);
     }
+    // 投稿者の骨格・パーソナルカラー取得（自分も含む）
+    $user_tags = [];
+    $stmt_tags = $pdo->prepare("
+        SELECT 
+            b.bt_name,
+            p1.pc_name AS pc1_name,
+            p2.pc_name AS pc2_name
+        FROM User u
+        LEFT JOIN Body_type b ON u.bt_id = b.bt_id
+        LEFT JOIN Parsonal_color p1 ON u.pc_id = p1.pc_id
+        LEFT JOIN Parsonal_color p2 ON u.pc_second_id = p2.pc_id
+        WHERE u.user_id = :uid
+    ");
+    $stmt_tags->bindValue(':uid', $post['user_id'], PDO::PARAM_INT);
+    $stmt_tags->execute();
+    $tag_row = $stmt_tags->fetch(PDO::FETCH_ASSOC);
+
+    // NULL でなければ追加
+    if (!empty($tag_row['bt_name'])) $user_tags[] = $tag_row['bt_name'];
+    if (!empty($tag_row['pc1_name'])) $user_tags[] = $tag_row['pc1_name'];
+    if (!empty($tag_row['pc2_name'])) $user_tags[] = $tag_row['pc2_name'];
+
+    // 投稿タグと統合
+    $all_tags = array_merge($tags, $user_tags);
 ?>
 <div class="post"
     data-post-id="<?= $post['post_id'] ?>"
@@ -506,11 +535,12 @@ hr{
     data-likes="<?= $post['like_count'] ?>"
     data-liked="<?= $post['is_liked'] ? 1 : 0 ?>"
     data-comments="<?= $post['comment_count'] ?>"
-    data-tags="<?= htmlspecialchars($post['tags'] ?? '') ?>">
-
-    <?php if($img_url && file_exists($img_url)): ?>
+    data-tags="<?= htmlspecialchars(implode(',', $all_tags), ENT_QUOTES) ?>"
+>
+    <?php if($img_path && file_exists($img_path)): ?>
         <img src="<?= htmlspecialchars($img_url, ENT_QUOTES) ?>">
     <?php endif; ?>
+
     <div class="post-body">
         <p class="post-text"><?= nl2br(htmlspecialchars($post['content_text'])) ?></p>
         <small>投稿日: <?= htmlspecialchars($post['created_at']) ?></small>

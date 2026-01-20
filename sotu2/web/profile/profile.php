@@ -232,29 +232,34 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     flex-shrink:0;
 }
 /* ===== テキストエリア ===== */
-.post-body{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    overflow:hidden;
+.post-body {
+    display: flex;
+    flex-direction: column;
 }
-.post-text{
-    font-size:14px;
-    line-height:1.6;
-    font-weight:500;
-    margin-bottom:4px;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
-    overflow:hidden;
-    flex-shrink:0;
+
+.post-text {
+    font-size: 13px;      /* 少し小さく */
+    line-height: 1.5;
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 2行で切り捨て */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex-shrink: 0;        /* 高さを縮めない */
 }
-.post small{
-    font-size:12px;
-    color:#666;
-    flex-shrink:0;
+
+.post small {
+    font-size: 11px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;      /* 本文の下に常に配置 */
+    flex-shrink: 0;        /* 高さが潰れないように */
 }
+
+
 .post p{
     font-size:14px;
     line-height:1.6;

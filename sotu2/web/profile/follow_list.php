@@ -28,7 +28,6 @@ $follow_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <style>
         /* ===== 全体 ===== */
         body {
-            
             font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
         }
 
@@ -116,7 +115,7 @@ $follow_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="follow-list">
             <?php foreach ($follow_list as $row): ?>
                 <div class="follow-item">
-                    <img src="<?= htmlspecialchars($row['pro_img'] ?? 'u_img/default.png') ?>">
+                    <img src="<?= htmlspecialchars($row['pro_img'] ? '../profile/u_img/'.$row['pro_img'] : '../profile/u_img/default.png') ?>">
                     <a href="profile.php?user_id=<?= $row['user_id'] ?>">
                         <?= htmlspecialchars($row['u_name']) ?>
                         <span class="user-id">(@<?= htmlspecialchars($row['u_name_id']) ?>)</span>
@@ -125,7 +124,7 @@ $follow_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; ?>
         </div>
     <?php else: ?>
-        <p>フォローしているユーザーはいません。</p>
+        <p class="empty-message">フォローしているユーザーはいません。</p>
     <?php endif; ?>
 </main>
 </body>

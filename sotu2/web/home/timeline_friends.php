@@ -158,6 +158,30 @@ function render_comments($comments, $level = 0) {
         echo '</div>';
     }
 }
+
+// 投稿者の骨格・パーソナルカラー取得
+$stmt_tags = $pdo->prepare("
+    SELECT 
+        b.bt_name,
+        p1.pc_name AS pc1_name,
+        p2.pc_name AS pc2_name
+    FROM User u
+    LEFT JOIN Body_type b ON u.bt_id = b.bt_id
+    LEFT JOIN Parsonal_color p1 ON u.pc_id = p1.pc_id
+    LEFT JOIN Parsonal_color p2 ON u.pc_second_id = p2.pc_id
+    WHERE u.user_id = :uid
+");
+$stmt_tags->bindValue(':uid', $user_id, PDO::PARAM_INT);
+$stmt_tags->execute();
+$tag_row = $stmt_tags->fetch(PDO::FETCH_ASSOC);
+
+// 配列にまとめる
+$user_tags = [];
+if (!empty($tag_row['bt_name']) && !empty($tag_row['pc1_name'])) {
+    $user_tags[] = $tag_row['bt_name'];
+    $user_tags[] = $tag_row['pc1_name'];
+    if (!empty($tag_row['pc2_name'])) $user_tags[] = $tag_row['pc2_name'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -639,6 +663,33 @@ main {
     <?php foreach ($posts as $post): ?>
         <?php $icon_path = getProfileImg($post['pro_img']); ?>
 
+        <!-- 投稿者の骨格・パーソナルカラー取得 -->
+        <?php 
+            $user_tags = [];
+            // 投稿者が登録している場合のみ取得
+            $stmt_tags = $pdo->prepare("
+                SELECT 
+                    b.bt_name,
+                    p1.pc_name AS pc1_name,
+                    p2.pc_name AS pc2_name
+                FROM User u
+                LEFT JOIN Body_type b ON u.bt_id = b.bt_id
+                LEFT JOIN Parsonal_color p1 ON u.pc_id = p1.pc_id
+                LEFT JOIN Parsonal_color p2 ON u.pc_second_id = p2.pc_id
+                WHERE u.user_id = :uid
+            ");
+            $stmt_tags->bindValue(':uid', $post['user_id'], PDO::PARAM_INT);
+            $stmt_tags->execute();
+            $tag_row = $stmt_tags->fetch(PDO::FETCH_ASSOC);
+
+            // bt_name と pc1_name が両方 null でなければタグ配列に追加
+            if (!empty($tag_row['bt_name']) && !empty($tag_row['pc1_name'])) {
+                $user_tags[] = $tag_row['bt_name'];
+                $user_tags[] = $tag_row['pc1_name'];
+                if (!empty($tag_row['pc2_name'])) $user_tags[] = $tag_row['pc2_name'];
+            }
+        ?>
+
     <div class="post" data-post-id="<?= $post['post_id'] ?>">
 
         <div class="post-image-wrapper">
@@ -678,6 +729,16 @@ main {
             </div>
         <?php endif; ?>
 
+        <!-- ユーザー登録タグ -->
+        <?php if(!empty($user_tags)): ?>
+        <div class="user-tags" style="margin-bottom:8px; display:flex; gap:6px; flex-wrap:wrap;">
+            <?php foreach($user_tags as $tag): ?>
+                <span class="tag" style="background:#d0f0ff; padding:2px 6px; border-radius:8px; font-size:12px;">
+                    #<?= htmlspecialchars($tag) ?>
+                </span>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
 
         <div class="post-footer">
             <!-- いいねボタン -->
