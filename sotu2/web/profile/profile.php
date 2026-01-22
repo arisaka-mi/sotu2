@@ -301,7 +301,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     max-width: 800px;
     margin: 0 auto;
     padding: 0 16px;
+    margin-top: 60px;
 }
+
     </style>
 </head>
 <body>
