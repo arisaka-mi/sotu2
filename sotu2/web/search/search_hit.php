@@ -447,14 +447,20 @@ hr{
     border-radius: 10px;
     padding: 6px;
 }
-
-    </style>
+.layout {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+</style>
 </head>
 <body>
 <header>
-    <?php include '../navigation/nav.php'; ?>
+    <div class="layout">
+        <?php include '../navigation/nav.php'; ?>
+    </div>
 </header>
-<main>
+<main class="layout">
     <!-- 検索フォーム -->
     <form method="get" action="search_control.php" class="text_kwd">
         <input type="text" name="keyword"

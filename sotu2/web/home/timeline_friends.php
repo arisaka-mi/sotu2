@@ -142,12 +142,6 @@ function render_comments($comments, $level = 0) {
         // ★ 返信フォーム
         echo '<div style="margin-top:5px;">';
         echo '<button type="button" onclick="toggleCommentForm(\'replyForm' . $c['cmt_id'] . '\')">返信</button>';
-        echo '<form id="replyForm' . $c['cmt_id'] . '" method="post" action="./add_comment.php" style="display:none; margin-top:5px;">';
-        echo '<input type="hidden" name="post_id" value="' . $c['post_id'] . '">';
-        echo '<input type="hidden" name="parent_cmt_id" value="' . $c['cmt_id'] . '">';
-        echo '<textarea name="comment" placeholder="返信..." required></textarea>';
-        echo '<button type="submit">送信</button>';
-        echo '</form>';
         echo '</div>';
 
         // 子コメント
@@ -229,8 +223,9 @@ if (!empty($tag_row['bt_name']) && !empty($tag_row['pc1_name'])) {
     white-space: nowrap;
 }
 main {
-    max-width: 800px;        /* 投稿コンテンツの最大幅 */
-    margin: 40px auto;
+    width: 100%;
+    max-width: 800px;   /* ← 中央にしたい幅 */
+    margin: 40px auto;  /* ← 横中央 */
     padding: 0 16px;
     box-sizing: border-box;
 }
@@ -611,6 +606,11 @@ main {
     font-weight:600;
     color:#333;
 }
+.layout {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
 
 </style>
 </head>
@@ -618,10 +618,12 @@ main {
 <body>
 
 <header>
-<?php include '../navigation/nav.php'; ?>
+    <div class="layout">
+        <?php include '../navigation/nav.php'; ?>
+    </div>
 </header>
 
-<main>
+<main class="layout">
 <!-- ★ フォロー / 相互フォローユーザー -->
 <?php if (!empty($follow_users)): ?>
 <div class="follower-section">

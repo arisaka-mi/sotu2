@@ -297,13 +297,20 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     font-weight:600;
     color:#333;
 }
+.layout {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
     </style>
 </head>
 <body>
 <header>
-    <?php include '../navigation/nav.php'; ?>
+    <div class="layout">
+        <?php include '../navigation/nav.php'; ?>
+    </div>
 </header>
-<main>
+<main class="layout">
     <div class="profile-container">
 
         <img src="<?= htmlspecialchars($img_path, ENT_QUOTES) ?>" class="profile-icon">
