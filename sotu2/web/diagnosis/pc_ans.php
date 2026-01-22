@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// ログインチェック
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login/login.php");
+    exit;
+}
+
 if (!isset($_SESSION['pc_score'])) {
     echo "診断データがありません。";
     exit;

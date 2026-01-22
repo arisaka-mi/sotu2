@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// ログインチェック
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login/login.php");
+    exit;
+}
+
 // 初回スコア初期化
 if (!isset($_SESSION['score'])) {
     $_SESSION['score'] = [

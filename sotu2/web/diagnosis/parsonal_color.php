@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// ログインチェック
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login/login.php");
+    exit;
+}
+
 // 初期化
 if (!isset($_SESSION['pc_score'])) {
     $_SESSION['pc_score'] = [
