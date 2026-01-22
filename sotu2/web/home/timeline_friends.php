@@ -613,6 +613,28 @@ main {
     padding-top: 40px;
 }
 
+/* × ボタン */
+.comment-close{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:32px;
+    height:32px;
+    background:#fff;
+    border-radius:50%;
+    font-size:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:1200;
+    box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+
+.comment-close:hover{
+    background:#f0f0f0;
+}
+
 </style>
 </head>
 
@@ -764,30 +786,32 @@ main {
     <?php endif; ?>
 
 
-   <!-- コメントモーダル -->
-    <div id="commentModal" style="display:none; top:30px; right:50px; width:350px; height:90vh; background:#fff; border-radius:16px; z-index:1100; box-shadow:0 4px 16px rgba(0,0,0,.2); padding:12px; flex-direction:column;">
-        <button id="closeCommentModal" style="position:absolute; top:10px; right:10px; font-size:20px; cursor:pointer;">×</button>
-        <h3>コメント</h3>
-        <div id="modalCommentsArea" style="flex:1; overflow-y:auto; margin-bottom:8px;"></div>
-        <form id="commentForm">
-            <div id="replyInfo" class="reply-info" style="display:none;">
-                <span id="replyToName"></span> 返信中
-                <button type="button" id="cancelReplyTop">×</button>
-            </div>
-            <input type="hidden" name="post_id" id="modalPostIdComment">
-            <input type="hidden" name="parent_cmt_id" id="parentCmtId">
-            <div class="comment-input-wrap">
-                <textarea id="commentTextarea" placeholder="コメントを書く..." required></textarea>
-                <button type="submit" class="comment-submit">送信</button>
-                <button type="button" id="cancelReplyBtn" style="display:none;">返信をキャンセル</button>
-            </div>
-        </form>
-    </div>
+<!-- コメントモーダル -->
+<div id="commentModal">
+    <!-- ★ 追加：閉じるボタン -->
+    <span class="comment-close">&times;</span>
+    <h3>コメント</h3>
+    <div id="modalCommentsArea"></div>
+    <form id="commentForm">
+        <div id="replyInfo" class="reply-info" style="display:none;">
+            <span id="replyToName"></span> 返信中
+            <button type="button" id="cancelReplyTop">×</button>
+        </div>
+        <input type="hidden" name="post_id" id="modalPostIdComment">
+        <input type="hidden" name="parent_cmt_id" id="parentCmtId">
+        <div class="comment-input-wrap">
+            <textarea id="commentTextarea"  placeholder="コメントを書く..." required></textarea>
+            <button type="submit" class="comment-submit">送信</button>
+            <button type="button" id="cancelReplyBtn" style="display:none;">返信をキャンセル</button>
+        </div>
+    </form>
+</div>
 
 
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
     const commentModal = document.getElementById('commentModal');
     const closeCommentModal = document.getElementById('closeCommentModal');
     const commentList = document.getElementById('modalCommentsArea');
@@ -800,175 +824,164 @@ document.addEventListener('DOMContentLoaded', () => {
     const replyToName = document.getElementById('replyToName');
     const cancelReplyTop = document.getElementById('cancelReplyTop');
 
+    let lastPageScrollY = window.scrollY;
 
-    document.querySelectorAll('.like-btn').forEach(likeBtn => {
-    likeBtn.addEventListener('click', async () => {
-        const likeIcon = likeBtn.querySelector('.like-icon');
-        const modalLikes = likeBtn.querySelector('span'); // ★ 修正
-        const postId = likeBtn.dataset.postId;
+    /* ===== モーダルを閉じる共通処理 ===== */
+    function closeCommentModalFunc() {
+        commentModal.style.display = 'none';
+        commentList.innerHTML = '';
+        cancelReply();
+    }
 
-        try {
-            const formData = new FormData();
-            formData.append('post_id', postId);
+    /* ===== ページスクロールのみで閉じる ===== */
+    window.addEventListener('scroll', () => {
+        // モーダルが閉じているなら何もしない
+        if (commentModal.style.display !== 'flex') return;
 
-            const res = await fetch('../home/toggle_like.php', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-
-            if (data.status !== 'ok') {
-                alert('いいね処理に失敗しました');
-                return;
-            }
-
-            // アイコン切り替え
-            if (data.liked) {
-                likeIcon.src = "../search/img/like_edge_2.PNG";
-                likeIcon.dataset.liked = "1";
-            } else {
-                likeIcon.src = "../search/img/like_edge.PNG";
-                likeIcon.dataset.liked = "0";
-            }
-
-            // ★ 正しいいいね数を表示
-            modalLikes.textContent = data.like_count;
-
-        } catch (e) {
-            console.error(e);
-            alert('通信エラーが発生しました');
+        // ページスクロールが発生したら閉じる
+        if (Math.abs(window.scrollY - lastPageScrollY) >= 15) {
+            closeCommentModalFunc();
         }
+
+        lastPageScrollY = window.scrollY;
     });
+
+    //コメントを閉じる
+const commentCloseBtn = document.querySelector('.comment-close');
+
+commentCloseBtn.addEventListener('click', () => {
+    commentModal.style.display = 'none';
 });
 
-
-    // コメントを見るボタン
+    /* ===== コメントボタン ===== */
     document.querySelectorAll('.comment-btn').forEach(btn => {
         btn.addEventListener('click', e => {
             e.stopPropagation();
+
             const postDiv = btn.closest('.post');
             const postId = postDiv.dataset.postId;
-            commentPostId.value = postId;
 
+            commentPostId.value = postId;
             commentModal.style.display = 'flex';
+
+            lastPageScrollY = window.scrollY; // ★ 開いた瞬間の位置を記録
             loadComments(postId);
         });
     });
 
+    /* ===== いいねボタン ===== */
+    document.querySelectorAll('.like-btn').forEach(likeBtn => {
+        likeBtn.addEventListener('click', async () => {
+            const likeIcon = likeBtn.querySelector('.like-icon');
+            const modalLikes = likeBtn.querySelector('span'); // ★ 修正
+            const postId = likeBtn.dataset.postId;
 
-    // モーダル閉じるボタン
-    closeCommentModal.addEventListener('click', () => {
-        commentModal.style.display = 'none';
-        commentList.innerHTML = '';
-        cancelReply();
+            try {
+                const formData = new FormData();
+                formData.append('post_id', postId);
+
+                const res = await fetch('../home/toggle_like.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.status !== 'ok') {
+                    alert('いいね処理に失敗しました');
+                    return;
+                }
+
+                // アイコン切り替え
+                if (data.liked) {
+                    likeIcon.src = "../search/img/like_edge_2.PNG";
+                    likeIcon.dataset.liked = "1";
+                } else {
+                    likeIcon.src = "../search/img/like_edge.PNG";
+                    likeIcon.dataset.liked = "0";
+                }
+
+                // ★ 正しいいいね数を表示
+                modalLikes.textContent = data.like_count;
+
+            } catch (e) {
+                console.error(e);
+                alert('通信エラーが発生しました');
+            }
+        });
     });
 
+    /* ===== 閉じるボタン ===== */
+    closeCommentModal.addEventListener('click', closeCommentModalFunc);
+
     // 返信キャンセル
-    function cancelReply(){
-        parentCmtId.value = '';
-        commentTextarea.placeholder = 'コメントを書く...';
-        replyInfo.style.display = 'none';
-        document.querySelectorAll('.comment-item').forEach(c=>c.classList.remove('reply-target'));
-        commentTextarea.focus();
-    }
+function cancelReply() {
+    parentCmtId.value = '';
+    commentTextarea.placeholder = 'コメントを書く...';
 
-    cancelReplyBtn.onclick = cancelReply;
-    cancelReplyTop.onclick = cancelReply;
+    document.getElementById('replyInfo').style.display = 'none';
+    document.querySelectorAll('.comment-item')
+        .forEach(c => c.classList.remove('reply-target'));
 
-    // コメント取得
+    commentTextarea.focus();
+}
+
+cancelReplyBtn.onclick = cancelReply;
+document.getElementById('cancelReplyTop').onclick = cancelReply;
+
+    /* ===== コメント取得 ===== */
     function loadComments(postId){
-        const scrollPos = commentList.scrollTop;
         fetch(`../home/add_comment.php?post_id=${postId}`)
-        .then(res => res.text())
-        .then(html => {
-            commentList.innerHTML = html;
-            commentList.scrollTop = scrollPos;
-            attachReplyButtons();
-        })
-        .catch(()=>commentList.textContent='コメント取得失敗');
+            .then(res => res.text())
+            .then(html => {
+                commentList.innerHTML = html;
+                attachReplyButtons();
+            });
     }
 
-    // 返信ボタン
+    /* ===== 返信ボタン ===== */
     function attachReplyButtons(){
-        document.querySelectorAll('.reply-btn').forEach(btn=>{
-            btn.onclick = ()=>{
+        document.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.onclick = () => {
                 parentCmtId.value = btn.dataset.parentId;
                 replyToName.textContent = btn.dataset.userName;
                 replyInfo.style.display = 'flex';
-                document.querySelectorAll('.comment-item').forEach(c => c.classList.remove('reply-target'));
-                btn.closest('.comment-item').classList.add('reply-target');
                 commentTextarea.placeholder = `@${btn.dataset.userName} に返信`;
                 commentTextarea.focus();
-            }
+            };
         });
     }
 
-    // コメント送信
+    /* ===== コメント送信 ===== */
     commentForm.addEventListener('submit', e => {
         e.preventDefault();
-        const comment = commentTextarea.value.trim();
-        if(!comment) return;
+        if (!commentTextarea.value.trim()) return;
 
-        const data = new URLSearchParams();
-        data.append('post_id', commentPostId.value);
-        data.append('comment', comment);
-        if(parentCmtId.value) data.append('parent_cmt_id', parentCmtId.value);
+        const data = new URLSearchParams({
+            post_id: commentPostId.value,
+            comment: commentTextarea.value
+        });
 
-        fetch('../home/add_comment.php', {method:'POST', body:data})
-        .then(()=> {
-            commentTextarea.value = '';
-            cancelReply();
-            loadComments(commentPostId.value);  
-        })
-        .catch(()=>alert('コメント送信失敗'));
+        if (parentCmtId.value) {
+            data.append('parent_cmt_id', parentCmtId.value);
+        }
+
+        fetch('../home/add_comment.php', { method:'POST', body:data })
+            .then(() => {
+                commentTextarea.value = '';
+                cancelReply();
+                loadComments(commentPostId.value);
+            });
     });
 
-    // Enterで送信
-    commentTextarea.addEventListener('keydown', e=>{
-        if(e.key==='Enter' && !e.shiftKey){
+    /* ===== Enter送信 ===== */
+    commentTextarea.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             commentForm.requestSubmit();
         }
     });
 
 });
-// コメントモーダル自動閉じ処理
-let observer = null;
-
-function observePostVisibility(postDiv) {
-    if (observer) observer.disconnect(); // 前の監視を解除
-
-    observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) {
-                // 投稿が少しでも画面外に出たらモーダルを閉じる
-                commentModal.style.display = 'none';
-                commentList.innerHTML = '';
-                cancelReply();
-            }
-        });
-    }, { threshold: 0 }); // 0 = 少しでも見えなければ閉じる
-
-    observer.observe(postDiv);
-}
-
-// コメントボタンクリック時に呼び出す
-document.querySelectorAll('.comment-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-        e.stopPropagation();
-        const postDiv = btn.closest('.post');
-        const postId = postDiv.dataset.postId;
-        commentPostId.value = postId;
-
-        commentModal.style.display = 'flex';
-        loadComments(postId);
-
-        // 投稿の表示監視開始
-        observePostVisibility(postDiv);
-    });
-});
-
-
 </script>
 
 </main>

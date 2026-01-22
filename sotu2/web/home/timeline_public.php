@@ -553,6 +553,23 @@ main {
     padding: 0 16px;
     padding-top: 40px;
 }
+/* × ボタン */
+.comment-close{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:32px;
+    height:32px;
+    background:#fff;
+    border-radius:50%;
+    font-size:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:1200;
+    box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
 
 
 </style>
@@ -699,24 +716,25 @@ main {
 
 
    <!-- コメントモーダル -->
-    <div id="commentModal" style="display:none; top:30px; right:50px; width:350px; height:90vh; background:#fff; border-radius:16px; z-index:1100; box-shadow:0 4px 16px rgba(0,0,0,.2); padding:12px; flex-direction:column;">
-        <button id="closeCommentModal" style="position:absolute; top:10px; right:10px; font-size:20px; cursor:pointer;">×</button>
-        <h3>コメント</h3>
-        <div id="modalCommentsArea" style="flex:1; overflow-y:auto; margin-bottom:8px;"></div>
-        <form id="commentForm">
-            <div id="replyInfo" class="reply-info" style="display:none;">
-                <span id="replyToName"></span> 返信中
-                <button type="button" id="cancelReplyTop">×</button>
-            </div>
-            <input type="hidden" name="post_id" id="modalPostIdComment">
-            <input type="hidden" name="parent_cmt_id" id="parentCmtId">
-            <div class="comment-input-wrap">
-                <textarea id="commentTextarea" placeholder="コメントを書く..." required></textarea>
-                <button type="submit" class="comment-submit">送信</button>
-                <button type="button" id="cancelReplyBtn" style="display:none;">返信をキャンセル</button>
-            </div>
-        </form>
-    </div>
+    <div id="commentModal">
+    <!-- ★ 追加：閉じるボタン -->
+    <span class="comment-close">&times;</span>
+    <h3>コメント</h3>
+    <div id="modalCommentsArea"></div>
+    <form id="commentForm">
+        <div id="replyInfo" class="reply-info" style="display:none;">
+            <span id="replyToName"></span> 返信中
+            <button type="button" id="cancelReplyTop">×</button>
+        </div>
+        <input type="hidden" name="post_id" id="modalPostIdComment">
+        <input type="hidden" name="parent_cmt_id" id="parentCmtId">
+        <div class="comment-input-wrap">
+            <textarea id="commentTextarea"  placeholder="コメントを書く..." required></textarea>
+            <button type="submit" class="comment-submit">送信</button>
+            <button type="button" id="cancelReplyBtn" style="display:none;">返信をキャンセル</button>
+        </div>
+    </form>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -754,6 +772,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lastPageScrollY = window.scrollY;
     });
+
+    //コメントを閉じる
+const commentCloseBtn = document.querySelector('.comment-close');
+
+commentCloseBtn.addEventListener('click', () => {
+    commentModal.style.display = 'none';
+});
 
     /* ===== コメントボタン ===== */
     document.querySelectorAll('.comment-btn').forEach(btn => {
@@ -815,17 +840,20 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ===== 閉じるボタン ===== */
     closeCommentModal.addEventListener('click', closeCommentModalFunc);
 
-    /* ===== 返信キャンセル ===== */
-    function cancelReply(){
-        parentCmtId.value = '';
-        commentTextarea.placeholder = 'コメントを書く...';
-        replyInfo.style.display = 'none';
-        document.querySelectorAll('.comment-item')
-            .forEach(c => c.classList.remove('reply-target'));
-    }
+    // 返信キャンセル
+function cancelReply() {
+    parentCmtId.value = '';
+    commentTextarea.placeholder = 'コメントを書く...';
 
-    cancelReplyBtn.onclick = cancelReply;
-    cancelReplyTop.onclick = cancelReply;
+    document.getElementById('replyInfo').style.display = 'none';
+    document.querySelectorAll('.comment-item')
+        .forEach(c => c.classList.remove('reply-target'));
+
+    commentTextarea.focus();
+}
+
+cancelReplyBtn.onclick = cancelReply;
+document.getElementById('cancelReplyTop').onclick = cancelReply;
 
     /* ===== コメント取得 ===== */
     function loadComments(postId){
