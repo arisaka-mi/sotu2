@@ -553,7 +553,26 @@ main {
     padding: 0 16px;
     padding-top: 40px;
 }
+.comment-close{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:32px;
+    height:32px;
+    background:#fff;
+    border-radius:50%;
+    font-size:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:1200;
+    box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
 
+.comment-close:hover{
+    background:#f0f0f0;
+}
 
 </style>
 </head>
@@ -700,7 +719,7 @@ main {
 
    <!-- コメントモーダル -->
     <div id="commentModal" style="display:none; top:30px; right:50px; width:350px; height:90vh; background:#fff; border-radius:16px; z-index:1100; box-shadow:0 4px 16px rgba(0,0,0,.2); padding:12px; flex-direction:column;">
-        <button id="closeCommentModal" style="position:absolute; top:10px; right:10px; font-size:20px; cursor:pointer;">×</button>
+        <button class = "comment-close" id="closeCommentModal" style="position:absolute; top:10px; right:10px; font-size:20px; cursor:pointer;">×</button>
         <h3>コメント</h3>
         <div id="modalCommentsArea" style="flex:1; overflow-y:auto; margin-bottom:8px;"></div>
         <form id="commentForm">
